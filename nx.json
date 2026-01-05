@@ -56,7 +56,6 @@
   ],
   "release": {
     "projects": [
-      "!utils",
       "!@shz/source"
     ],
     "version": {
