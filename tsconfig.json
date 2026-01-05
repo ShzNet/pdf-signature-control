@@ -10,16 +10,10 @@
       "path": "./packages/pdf-sign-react"
     },
     {
-      "path": "./packages/pdf-sign-vue"
-    },
-    {
       "path": "./packages/pdf-sign-standalone"
     },
     {
       "path": "./apps/demo-react"
-    },
-    {
-      "path": "./apps/demo-vue"
     },
     {
       "path": "./apps/demo-vanilla"
