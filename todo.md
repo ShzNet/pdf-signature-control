@@ -1,19 +1,19 @@
 # Task Checklist - @shz/pdf-sign-control
 
 - [ ] **Phase 1: Project & Demo Environment Setup** <!-- id: 0 -->
-    - [ ] Create `@shz/pdf-sign-control` (Core Lib) <!-- id: 1 -->
-    - [ ] Create `@shz/pdf-sign-react` (React Wrapper) <!-- id: 2 -->
-    - [ ] Create `@shz/pdf-sign-vue` (Vue Wrapper) <!-- id: 3 -->
-    - [ ] Create `@shz/pdf-sign-angular` (Angular Wrapper) <!-- id: 4 -->
-    - [ ] Create `@shz/pdf-sign-standalone` (Vanilla JS Wrapper) <!-- id: 5 -->
+    - [x] Create `@shz/pdf-sign-control` (Core Lib) <!-- id: 1 -->
+    - [x] Create `@shz/pdf-sign-react` (React Wrapper) <!-- id: 2 -->
+    - [x] Create `@shz/pdf-sign-vue` (Vue Wrapper) <!-- id: 3 -->
+    - [x] Create `@shz/pdf-sign-angular` (Angular Wrapper) <!-- id: 4 -->
+    - [x] Create `@shz/pdf-sign-standalone` (Vanilla JS Wrapper) <!-- id: 5 -->
     - [ ] **Setup Demos**:
-        - [ ] Create `apps/demo-react` and link wrapper <!-- id: 6 -->
-        - [ ] Create `apps/demo-vue` and link wrapper <!-- id: 7 -->
-        - [ ] Create `apps/demo-angular` and link wrapper <!-- id: 8 -->
-        - [ ] Create `apps/demo-vanilla` (Standalone) <!-- id: 9 -->
+        - [x] Create `apps/demo-react` and link wrapper <!-- id: 6 -->
+        - [x] Create `apps/demo-vue` and link wrapper <!-- id: 7 -->
+        - [x] Create `apps/demo-angular` and link wrapper <!-- id: 8 -->
+    - [x] Create `apps/demo-vanilla` (Standalone) <!-- id: 9 -->
 
 - [ ] **Phase 2: PDF Viewer Engine (Core Rendering)** <!-- id: 10 -->
-    - [ ] Implement `PdfLoader` & `PdfViewer` (Core) <!-- id: 11 -->
+    - [/] Implement `PdfLoader` & `PdfViewer` (Core) <!-- id: 11 -->
     - [ ] Implement `CanvasLayer` (PDF.js rendering) <!-- id: 12 -->
     - [ ] **Verification**:
         - [ ] Vanilla: Load & Render PDF <!-- id: 13 -->

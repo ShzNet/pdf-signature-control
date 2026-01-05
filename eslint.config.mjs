@@ -13,7 +13,7 @@ export default [
     ],
   },
   {
-    files: ['**/*.ts', '**/*.js'],
+    files: ['**/*.ts', '**/*.js', '**/*.vue'],
     rules: {
       '@nx/enforce-module-boundaries': [
         'error',

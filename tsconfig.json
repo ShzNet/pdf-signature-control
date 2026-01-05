@@ -2,5 +2,33 @@
   "extends": "./tsconfig.base.json",
   "compileOnSave": false,
   "files": [],
-  "references": []
+  "references": [
+    {
+      "path": "./packages/pdf-sign-control"
+    },
+    {
+      "path": "./packages/pdf-sign-react"
+    },
+    {
+      "path": "./packages/pdf-sign-vue"
+    },
+    {
+      "path": "./packages/pdf-sign-standalone"
+    },
+    {
+      "path": "./apps/demo-react"
+    },
+    {
+      "path": "./apps/demo-vue"
+    },
+    {
+      "path": "./apps/demo-vanilla"
+    },
+    {
+      "path": "./packages/pdf-sign-angular"
+    },
+    {
+      "path": "./apps/demo-angular"
+    }
+  ]
 }
