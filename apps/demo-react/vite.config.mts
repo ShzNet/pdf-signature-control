@@ -6,11 +6,11 @@ export default defineConfig(() => ({
   root: import.meta.dirname,
   cacheDir: '../../node_modules/.vite/apps/demo-react',
   server: {
-    port: 42004200,
+    port: 4200,
     host: 'localhost',
   },
   preview: {
-    port: 42004200,
+    port: 4200,
     host: 'localhost',
   },
   plugins: [react()],

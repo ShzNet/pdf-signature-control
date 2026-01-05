@@ -13,8 +13,8 @@
     - [x] Create `apps/demo-vanilla` (Standalone) <!-- id: 9 -->
 
 - [ ] **Phase 2: PDF Viewer Engine (Core Rendering)** <!-- id: 10 -->
-    - [/] Implement `PdfLoader` & `PdfViewer` (Core) <!-- id: 11 -->
-    - [ ] Implement `CanvasLayer` (PDF.js rendering) <!-- id: 12 -->
+    - [x] Implement `PdfLoader` & `PdfViewer` (Core) <!-- id: 11 -->
+    - [x] Implement `CanvasLayer` (PDF.js rendering) <!-- id: 12 -->
     - [ ] **Verification**:
         - [ ] Vanilla: Load & Render PDF <!-- id: 13 -->
         - [ ] React: Component renders PDF <!-- id: 14 -->

@@ -14,5 +14,10 @@
     "jest.config.ts",
     "jest.config.cts",
     "src/test-setup.ts"
+  ],
+  "references": [
+    {
+      "path": "../pdf-sign-control/tsconfig.lib.json"
+    }
   ]
 }
