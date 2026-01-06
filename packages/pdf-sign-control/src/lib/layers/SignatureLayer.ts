@@ -78,7 +78,7 @@ export class SignatureLayer {
                 height: data.height
             };
 
-            this.eventBus.emit('field:update', {
+            this.eventBus.emit('field:ui:resize', {
                 fieldId: data.fieldId,
                 updates: { rect: field.rect }
             });
@@ -100,7 +100,6 @@ export class SignatureLayer {
         const div = document.createElement('div');
         div.className = 'sc-signature-field';
         div.dataset.id = field.id;
-        console.log('SignatureLayer: creating field', field.id, 'draggable:', field.draggable);
         div.dataset.moveable = String(field.draggable !== false);
         div.style.position = 'absolute';
         div.style.pointerEvents = 'auto'; // Capture clicks on fields

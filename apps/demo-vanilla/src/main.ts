@@ -200,29 +200,10 @@ if (app) {
     <div class="panel-section" style="padding: 20px; border-bottom: 1px solid #e9ecef;">
         <div class="panel-title">Signature Fields</div>
         <div class="field-list" style="display: flex; flex-direction: column; gap: 8px;">
-            <div class="field-item" style="padding: 10px; background: #e9ecef; border-radius: 4px; font-size: 13px;">
-                Signature 1 (Page 1)
-            </div>
-            <div class="field-item" style="padding: 10px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 13px;">
-                Signature 2 (Page 3)
-            </div>
+            <div style="color:#999; font-size:12px; font-style:italic; padding:10px;">No fields yet</div>
         </div>
     </div>
-    <div class="properties-panel">
-        <div class="panel-title">Properties</div>
-        <div class="form-group">
-            <label>Field Name</label>
-            <input type="text" value="Signature 1">
-        </div>
-        <div class="form-group">
-            <label>Signer</label>
-            <input type="text" value="John Doe">
-        </div>
-        <div class="form-group">
-            <label>Date</label>
-            <input type="text" value="${new Date().toLocaleDateString()}" readonly>
-        </div>
-    </div>
+
   `;
   app.appendChild(rightPanel);
 
@@ -274,6 +255,60 @@ if (app) {
   control.on('scale:change', (data: any) => {
     currentScale = data.scale;
     zoomInfo.textContent = `${Math.round(data.scale * 100)}%`;
+  });
+
+  // Debug Events
+  control.on('field:add', (field: any) => {
+    console.log('EVENT field:add', field);
+  });
+  control.on('field:remove', (data: any) => {
+    console.log('EVENT field:remove', data);
+  });
+  control.on('field:update', (data: any) => {
+    console.log('EVENT field:update', data);
+  });
+
+  // Sync Fields to Right Panel
+  const fieldListContainer = document.querySelector('.right-panel .field-list') as HTMLDivElement;
+
+  const renderFields = (fields: any[]) => {
+    if (!fieldListContainer) return;
+    fieldListContainer.innerHTML = '';
+
+    fields.forEach((field, index) => {
+      const item = document.createElement('div');
+      item.className = 'field-item';
+      item.style.padding = '10px';
+      item.style.border = '1px solid #dee2e6';
+      item.style.borderRadius = '4px';
+      item.style.fontSize = '12px';
+      item.style.cursor = 'pointer';
+      item.style.marginBottom = '5px';
+      item.style.background = 'white';
+
+      // Basic Info
+      const pageLabel = `Page ${field.pageIndex + 1}`;
+      const typeLabel = field.type.toUpperCase();
+      const coords = `x:${Math.round(field.rect.x)}, y:${Math.round(field.rect.y)}`;
+
+      item.innerHTML = `
+            <div style="font-weight:bold; margin-bottom:2px;">${index + 1}. ${typeLabel} (${pageLabel})</div>
+            <div style="color:#666; font-size:11px;">${coords}</div>
+            <div style="color:#666; font-size:11px;">Size: ${Math.round(field.rect.width)}x${Math.round(field.rect.height)}</div>
+          `;
+
+      item.onclick = () => {
+        // Optional: Highlight field or scroll to it
+        console.log('Clicked field:', field.id);
+      };
+
+      fieldListContainer.appendChild(item);
+    });
+  };
+
+  control.on('fields:change', (fields: any[]) => {
+    console.log('EVENT fields:change', fields);
+    renderFields(fields);
   });
 
   // Load PDF

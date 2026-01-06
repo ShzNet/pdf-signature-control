@@ -72,9 +72,7 @@ export class InteractionManager {
             }
 
             // Check if moveable
-            console.log('InteractionManager: checking moveable', field.dataset.moveable, field.dataset.id);
             if (field.dataset.moveable === 'false') {
-                console.log('InteractionManager: drag blocked');
                 return;
             }
 

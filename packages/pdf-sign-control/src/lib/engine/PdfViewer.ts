@@ -50,6 +50,10 @@ export class PdfViewer {
         this.eventBus.on('field:drop', (data: { fieldId: string, clientX: number, clientY: number, elementX: number, elementY: number }) => {
             this.handleFieldDrop(data.fieldId, data.clientX, data.clientY, data.elementX, data.elementY);
         });
+
+        this.eventBus.on('field:ui:resize', (data: { fieldId: string, updates: Partial<SignatureField> }) => {
+            this.updateField(data.fieldId, data.updates);
+        });
     }
 
     async load(source: string | Uint8Array | ArrayBuffer): Promise<void> {
@@ -192,11 +196,15 @@ export class PdfViewer {
 
         this.fields.push(field);
         this.strategy?.setFields(this.fields);
+        this.eventBus.emit('field:add', field);
+        this.eventBus.emit('fields:change', this.fields);
     }
 
     removeField(fieldId: string): void {
         this.fields = this.fields.filter(f => f.id !== fieldId);
         this.strategy?.setFields(this.fields);
+        this.eventBus.emit('field:remove', { fieldId });
+        this.eventBus.emit('fields:change', this.fields);
     }
 
     updateField(fieldId: string, updates: Partial<SignatureField>): void {
@@ -204,6 +212,8 @@ export class PdfViewer {
         if (index !== -1) {
             this.fields[index] = { ...this.fields[index], ...updates };
             this.strategy?.setFields(this.fields);
+            this.eventBus.emit('field:update', { fieldId, updates });
+            this.eventBus.emit('fields:change', this.fields);
         }
     }
 
