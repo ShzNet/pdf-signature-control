@@ -178,32 +178,7 @@ export function App() {
 
           <button className="btn-primary" onClick={handleAddField} style={{ marginTop: '10px' }}>Add Field</button>
 
-          <div style={{ marginTop: '20px', borderTop: '1px solid #ddd', paddingTop: '10px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>Model Sync Test</div>
-            <button
-              className="btn-secondary"
-              onClick={() => {
-                const externalField: SignatureField = {
-                  id: `ext-${Date.now()}`,
-                  pageIndex: 0,
-                  rect: { x: 50, y: 50, width: 100, height: 50 },
-                  type: 'text',
-                  content: 'External Field',
-                  draggable: true,
-                  resizable: true,
-                  deletable: true,
-                  style: { border: '2px dashed red', backgroundColor: 'rgba(255,0,0,0.1)' }
-                };
-                setFields(prev => [...prev, externalField]);
-              }}
-              style={{ width: '100%', fontSize: '11px', padding: '5px' }}
-            >
-              + Add via Props (External)
-            </button>
-            <div style={{ fontSize: '10px', color: '#666', marginTop: '5px' }}>
-              Adds a field by modifying the <code>fields</code> prop directly.
-            </div>
-          </div>
+          {/* Sync Test Moved to Right Panel */}
         </div>
       </aside>
 
@@ -250,7 +225,7 @@ export function App() {
             onPageChange={(page, total) => setPageInfo(`${page} / ${total}`)}
             onScaleChange={(s) => setScale(Math.round(s * 100))}
             onError={(err) => console.error('PDF Error:', err)}
-            onFieldsChange={setFields}
+            onFieldsChange={(newFields) => setFields([...newFields])}
           />
         </div>
       </main>
@@ -271,24 +246,120 @@ export function App() {
                     border: '1px solid #dee2e6',
                     borderRadius: '4px',
                     fontSize: '12px',
-                    cursor: 'pointer',
                     marginBottom: '5px',
                     background: 'white'
                   }}
-                  onClick={() => console.log('Clicked field:', field.id)}
                 >
-                  <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>
-                    {index + 1}. {field.type.toUpperCase()} (Page {field.pageIndex + 1})
+                  <div style={{ fontWeight: 'bold', marginBottom: '5px', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>{index + 1}. {field.type.toUpperCase()} (P{field.pageIndex + 1})</span>
+                    <button
+                      style={{ padding: '2px 5px', fontSize: '10px', background: '#ff4d4f', color: 'white', border: 'none', borderRadius: '3px' }}
+                      onClick={() => setFields(prev => prev.filter(f => f.id !== field.id))}
+                    >X</button>
                   </div>
-                  <div style={{ color: '#666', fontSize: '11px' }}>
-                    x:{Math.round(field.rect.x)}, y:{Math.round(field.rect.y)}
+
+                  {/* Content Editor */}
+                  <div style={{ marginBottom: '5px' }}>
+                    <label style={{ fontSize: '10px', marginBottom: '2px' }}>Content</label>
+                    <input
+                      type="text"
+                      value={field.content || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFields(prev => prev.map(f => f.id === field.id ? { ...f, content: val } : f));
+                      }}
+                      style={{ width: '100%', padding: '4px', fontSize: '11px' }}
+                    />
                   </div>
-                  <div style={{ color: '#666', fontSize: '11px' }}>
-                    Size: {Math.round(field.rect.width)}x{Math.round(field.rect.height)}
+
+                  {/* Rect Editor */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px', marginBottom: '5px' }}>
+                    <div>
+                      <label style={{ fontSize: '10px', marginBottom: '2px' }}>X</label>
+                      <input type="number" value={Math.round(field.rect.x)}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setFields(prev => prev.map(f => f.id === field.id ? { ...f, rect: { ...f.rect, x: val } } : f));
+                        }}
+                        style={{ width: '100%', padding: '4px', fontSize: '11px' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '10px', marginBottom: '2px' }}>Y</label>
+                      <input type="number" value={Math.round(field.rect.y)}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setFields(prev => prev.map(f => f.id === field.id ? { ...f, rect: { ...f.rect, y: val } } : f));
+                        }}
+                        style={{ width: '100%', padding: '4px', fontSize: '11px' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '10px', marginBottom: '2px' }}>W</label>
+                      <input type="number" value={Math.round(field.rect.width)}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setFields(prev => prev.map(f => f.id === field.id ? { ...f, rect: { ...f.rect, width: val } } : f));
+                        }}
+                        style={{ width: '100%', padding: '4px', fontSize: '11px' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '10px', marginBottom: '2px' }}>H</label>
+                      <input type="number" value={Math.round(field.rect.height)}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setFields(prev => prev.map(f => f.id === field.id ? { ...f, rect: { ...f.rect, height: val } } : f));
+                        }}
+                        style={{ width: '100%', padding: '4px', fontSize: '11px' }}
+                      />
+                    </div>
                   </div>
+
+                  {/* Props Checkboxes */}
+                  <div style={{ display: 'flex', gap: '8px', fontSize: '10px' }}>
+                    <label>
+                      <input type="checkbox" checked={field.draggable !== false}
+                        onChange={(e) => setFields(prev => prev.map(f => f.id === field.id ? { ...f, draggable: e.target.checked } : f))}
+                      /> Drag
+                    </label>
+                    <label>
+                      <input type="checkbox" checked={field.resizable !== false}
+                        onChange={(e) => setFields(prev => prev.map(f => f.id === field.id ? { ...f, resizable: e.target.checked } : f))}
+                      /> Resize
+                    </label>
+                  </div>
+
                 </div>
               ))
             )}
+          </div>
+
+          <div style={{ marginTop: '20px', borderTop: '1px solid #ddd', paddingTop: '10px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>Model Sync Test</div>
+            <button
+              className="btn-secondary"
+              onClick={() => {
+                const externalField: SignatureField = {
+                  id: `ext-${Date.now()}`,
+                  pageIndex: 0,
+                  rect: { x: 50, y: 50, width: 100, height: 50 },
+                  type: 'text',
+                  content: 'External Field',
+                  draggable: true,
+                  resizable: true,
+                  deletable: true,
+                  style: { border: '2px dashed red', backgroundColor: 'rgba(255,0,0,0.1)' }
+                };
+                setFields(prev => [...prev, externalField]);
+              }}
+              style={{ width: '100%', fontSize: '11px', padding: '5px' }}
+            >
+              + Add via Props (External)
+            </button>
+            <div style={{ fontSize: '10px', color: '#666', marginTop: '5px' }}>
+              Adds a field by modifying the <code>fields</code> prop directly.
+            </div>
           </div>
         </div>
       </aside>

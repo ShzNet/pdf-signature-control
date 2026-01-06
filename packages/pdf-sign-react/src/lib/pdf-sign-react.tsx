@@ -155,9 +155,12 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
   // Handle fields changes
   useEffect(() => {
     if (controlRef.current && props.fields) {
-      // Logic to sync fields. Careful with infinite loops if onFieldsChange updates parent state that passes back here.
-      // Usually, 'fields' prop implies "controlled" or "initial" mode.
-      // For now, we just set them.
+      // Loop Prevention: Check if fields are actually different
+      const currentFields = controlRef.current.getFields();
+
+      if (JSON.stringify(currentFields) === JSON.stringify(props.fields)) {
+        return;
+      }
       controlRef.current.setFields(props.fields);
     }
   }, [props.fields]);

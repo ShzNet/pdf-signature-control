@@ -261,29 +261,20 @@ export class SignatureLayer {
         btn.style.zIndex = '20';
         btn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
 
-        // Visibility Logic:
-        // On Desktop (mouse): Show on hover.
-        // On Touch: Always show? Or show on selection?
-        // For now, let's keep the hover logic but ensure it's robust.
-        // Actually, for better UX, let's just make it visible when the field is "active" or just always visible if it's meant to be edited.
-        // But to avoid visual clutter, let's stick to hover, but add a class 'visible' mechanism.
-
+        // Visibility Logic
         btn.style.opacity = '0';
         btn.style.transition = 'opacity 0.2s';
 
         container.addEventListener('mouseenter', () => btn.style.opacity = '1');
         container.addEventListener('mouseleave', () => btn.style.opacity = '0');
 
-        // Mobile fallback: If we are on a touch device, we might want to toggle this on click.
-        // But dragging handles click.
-
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            e.stopPropagation(); // Don't trigger field click
+            e.stopPropagation();
             this.eventBus.emit('field:delete', { fieldId: id });
         });
 
-        // Touch support for delete button
+        // Touch support
         btn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -307,6 +298,14 @@ export class SignatureLayer {
 
         // Coordinate Conversion: Bottom-Left (PDF) -> Top-Left (Screen CSS)
         // y_top_left_unscaled = page_height - y_pdf - height_pdf
+
+        if (this.pageHeight === 0) {
+            // Defer positioning or hide until dimensions are set
+            el.style.display = 'none';
+            return;
+        }
+        el.style.display = 'block';
+
         const yTopLeftUnscaled = this.pageHeight - field.rect.y - field.rect.height;
 
         // Wrapper: Screen Pixels (for correct interaction/hit testing)
