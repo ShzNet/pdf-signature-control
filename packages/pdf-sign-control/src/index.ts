@@ -5,5 +5,7 @@ export type {
     PageChangeEvent,
     ScaleChangeEvent,
     PdfSignControlOptions,
-    PdfLoaderOptions
+    PdfLoaderOptions,
+    SignatureField,
+    SignatureFieldType
 } from './lib/types.js';

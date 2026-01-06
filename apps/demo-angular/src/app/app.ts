@@ -28,6 +28,8 @@ export class App {
     cMapPacked: true
   };
 
+  fields: any[] = [];
+
   onControlReady(control: PdfSignControl) {
     console.log('PDF Control ready:', control);
   }
@@ -38,6 +40,32 @@ export class App {
 
   onScaleChange(data: { scale: number }) {
     this.zoomInfo = `${Math.round(data.scale * 100)}%`;
+  }
+
+  onFieldsChange(fields: any[]) {
+    console.log('Demo: onFieldsChange', fields);
+    this.fields = fields;
+    // Note: In Angular, if we update the same reference, change detection might catch it 
+    // depending on strategy. But 'fields' from event is usually a new array or mutated array.
+    // If loop occurs, we might need checks.
+  }
+
+  addExternalField() {
+    const externalField = {
+      id: `ext-${Date.now()}`,
+      pageIndex: 0,
+      rect: { x: 50, y: 50, width: 100, height: 50 },
+      type: 'text',
+      content: 'External Field (NG)',
+      draggable: true,
+      resizable: true,
+      deletable: true,
+      style: { border: '2px dashed blue', backgroundColor: 'rgba(0,0,255,0.1)' }
+    };
+
+    // We must create a NEW array reference to trigger ngOnChanges in the child component if using OnPush
+    // or to ensure @Input change is detected.
+    this.fields = [...this.fields, externalField];
   }
 
   onError(error: Error) {

@@ -38,6 +38,8 @@ export interface PdfSignControlOptions {
     container: HTMLElement;
     pdfLoaderOptions?: PdfLoaderOptions;
     viewMode?: ViewMode;
+    /** Initial fields to load */
+    fields?: SignatureField[];
 }
 
 /**

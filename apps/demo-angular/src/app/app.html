@@ -8,6 +8,13 @@
     <button class="btn-primary">Add Signature Field</button>
     <button class="btn-secondary" disabled style="opacity: 0.5; background: #e9ecef; border: 1px solid #ced4da;">Add
       Date Field</button>
+
+    <div style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px;">
+      <div style="font-size: 11px; font-weight: bold; margin-bottom: 5px;">Model Sync Test</div>
+      <button class="btn-secondary" (click)="addExternalField()" style="width: 100%; font-size: 11px; padding: 5px;">
+        + Add via Input (External)
+      </button>
+    </div>
   </div>
 </aside>
 
@@ -38,9 +45,9 @@
   </div>
 
   <div class="pdf-container">
-    <lib-pdf-sign-angular [src]="pdfUrl" [viewMode]="viewMode" [pdfLoaderOptions]="pdfLoaderOptions"
+    <lib-pdf-sign-angular [src]="pdfUrl" [viewMode]="viewMode" [pdfLoaderOptions]="pdfLoaderOptions" [fields]="fields"
       (ready)="onControlReady($event)" (pageChange)="onPageChange($event)" (scaleChange)="onScaleChange($event)"
-      (error)="onError($event)">
+      (fieldsChange)="onFieldsChange($event)" (error)="onError($event)">
     </lib-pdf-sign-angular>
   </div>
 </main>

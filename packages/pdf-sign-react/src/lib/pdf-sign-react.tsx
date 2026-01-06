@@ -1,5 +1,5 @@
 import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import { PdfSignControl, PdfSignControlOptions, ViewMode } from '@shz/pdf-sign-control';
+import { PdfSignControl, PdfSignControlOptions, ViewMode, SignatureField } from '@shz/pdf-sign-control';
 
 export interface PdfSignReactRef {
   /** Get the underlying PdfSignControl instance */
@@ -49,6 +49,18 @@ export interface PdfSignReactProps {
   onScaleChange?: (scale: number) => void;
   /** Callback on error */
   onError?: (error: Error) => void;
+
+  /** Initial fields */
+  fields?: SignatureField[];
+
+  /** Callback when a field is added */
+  onFieldAdd?: (field: SignatureField) => void;
+  /** Callback when a field is removed */
+  onFieldRemove?: (data: { fieldId: string }) => void;
+  /** Callback when a field is updated */
+  onFieldUpdate?: (data: { fieldId: string, updates: Partial<SignatureField> }) => void;
+  /** Callback when any field changes (add/remove/update) */
+  onFieldsChange?: (fields: SignatureField[]) => void;
 }
 
 export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((props, ref) => {
@@ -84,6 +96,7 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
       container: containerRef.current,
       viewMode: props.viewMode,
       pdfLoaderOptions: props.pdfLoaderOptions,
+      fields: props.fields,
     });
 
     // Setup event listeners
@@ -99,11 +112,23 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
       });
     }
 
+    // Field Events
+    if (props.onFieldAdd) {
+      controlRef.current.on('field:add', (field: any) => props.onFieldAdd?.(field));
+    }
+    if (props.onFieldRemove) {
+      controlRef.current.on('field:remove', (data: any) => props.onFieldRemove?.(data));
+    }
+    if (props.onFieldUpdate) {
+      controlRef.current.on('field:update', (data: any) => props.onFieldUpdate?.(data));
+    }
+    if (props.onFieldsChange) {
+      controlRef.current.on('fields:change', (fields: any[]) => props.onFieldsChange?.(fields));
+    }
+
     if (props.onReady) {
       props.onReady(controlRef.current);
     }
-
-
 
     return () => {
       controlRef.current?.destroy();
@@ -126,6 +151,16 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
       controlRef.current.setViewMode(props.viewMode);
     }
   }, [props.viewMode]);
+
+  // Handle fields changes
+  useEffect(() => {
+    if (controlRef.current && props.fields) {
+      // Logic to sync fields. Careful with infinite loops if onFieldsChange updates parent state that passes back here.
+      // Usually, 'fields' prop implies "controlled" or "initial" mode.
+      // For now, we just set them.
+      controlRef.current.setFields(props.fields);
+    }
+  }, [props.fields]);
 
   return <div ref={containerRef} className={props.className} style={{ width: '100%', height: '100%', ...props.style }} />;
 });

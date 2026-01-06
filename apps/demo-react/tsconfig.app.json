@@ -37,6 +37,9 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../../packages/pdf-sign-control/tsconfig.lib.json"
+    },
+    {
       "path": "../../packages/pdf-sign-react/tsconfig.lib.json"
     }
   ]

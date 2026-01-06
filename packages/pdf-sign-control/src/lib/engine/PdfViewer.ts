@@ -10,6 +10,7 @@ export interface PdfViewerOptions {
     container: HTMLElement;
     pdfLoaderOptions?: PdfLoaderOptions;
     viewMode?: ViewMode;
+    fields?: SignatureField[];
 }
 
 export class PdfViewer {
@@ -28,6 +29,11 @@ export class PdfViewer {
         this.eventBus = new EventBus();
         this.loader = new PdfLoader(options.pdfLoaderOptions);
         this.currentViewMode = options.viewMode ?? 'scroll';
+
+        // Initialize fields
+        if (options.fields) {
+            this.fields = [...options.fields];
+        }
 
         // Initialize zoom handler for gesture-based zoom
         this.zoomHandler = new ZoomHandler({
