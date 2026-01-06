@@ -18,14 +18,24 @@
         - [x] React: Component renders PDF <!-- id: 14 -->
         - [x] Angular: Module renders PDF <!-- id: 16 -->
 
-- [ ] **Phase 3: View Modes (Scroll vs Single)** <!-- id: 17 -->
-    - [ ] Implement `SinglePageStrategy` <!-- id: 18 -->
-    - [ ] Implement `ScrollStrategy` (Virtual Scrolling) <!-- id: 19 -->
-    - [ ] Implement `ZoomManager` <!-- id: 20 -->
-    - [ ] **Verification**:
-        - [ ] Check Zoom/Scroll in React <!-- id: 21 -->
-        - [ ] Check Zoom/Scroll in Angular <!-- id: 23 -->
-        - [ ] Check Zoom/Scroll in Vanilla <!-- id: 24 -->
+- [x] **Phase 3: View Modes (Scroll vs Single)** <!-- id: 17 -->
+    - [x] Implement `SinglePageStrategy` <!-- id: 18 -->
+    - [x] Implement `ScrollStrategy` (Virtual Scrolling) <!-- id: 19 -->
+    - [x] Implement `ZoomManager` (Gesture Zoom & Optimized Rendering) <!-- id: 20 -->
+    - [x] **Verification**:
+        - [x] Check Zoom/Scroll in React <!-- id: 21 -->
+        - [x] Check Zoom/Scroll in Angular <!-- id: 23 -->
+        - [x] Check Zoom/Scroll in Vanilla <!-- id: 24 -->
+
+- [x] **Phase 3.5: UI Redesign & Critical Bug Fixes**
+    - [x] **3-Panel Layout**: Redesigned all demos (Toolbox, Viewer, Properties)
+    - [x] **Bug Fixes**:
+        - [x] Initial Scroll Position (ScrollTop Reset)
+        - [x] Top Content Clipping (justify-content fix)
+        - [x] React Zoom Consistency (State Persistence)
+        - [x] React Double-Load Race Condition
+        - [x] Partial Zoom (Zombie Render & Parallel Placeholders)
+        - [x] Angular UI Mismatch (Host Display & Global Reset)
 
 - [ ] **Phase 4: Signature Field System (Interactions)** <!-- id: 25 -->
     - [ ] Implement `SignatureLayer` (DOM Overlay) <!-- id: 26 -->

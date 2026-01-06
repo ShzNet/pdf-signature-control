@@ -2,6 +2,7 @@ import { PDFDocumentProxy } from 'pdfjs-dist';
 import { EventBus } from '../utils/EventBus.js';
 import { PdfPageView } from '../engine/PdfPageView.js';
 import { IViewModeStrategy } from './IViewModeStrategy.js';
+import { SignatureField } from '../types.js';
 
 /**
  * Single page viewing strategy - displays one page at a time.
@@ -18,6 +19,7 @@ export class SinglePageStrategy implements IViewModeStrategy {
     private pageView: PdfPageView | null = null;
     private pageContainer!: HTMLElement;
     private zoomTimeout: ReturnType<typeof setTimeout> | null = null;
+    private fields: SignatureField[] = [];
 
     async init(container: HTMLElement, pdfDocument: PDFDocumentProxy, eventBus: EventBus, initialScale?: number): Promise<void> {
         this.container = container;
@@ -60,6 +62,9 @@ export class SinglePageStrategy implements IViewModeStrategy {
             scale: this.scale,
             eventBus: this.eventBus
         });
+
+        const pageFields = this.fields.filter(f => f.pageIndex === this.currentPage - 1);
+        this.pageView.setFields(pageFields);
 
         this.pageView.setPdfPage(pdfPage);
 
@@ -114,6 +119,14 @@ export class SinglePageStrategy implements IViewModeStrategy {
 
     getScale(): number {
         return this.scale;
+    }
+
+    setFields(fields: SignatureField[]): void {
+        this.fields = fields;
+        if (this.pageView) {
+            const pageFields = this.fields.filter(f => f.pageIndex === this.currentPage - 1);
+            this.pageView.setFields(pageFields);
+        }
     }
 
     destroy(): void {

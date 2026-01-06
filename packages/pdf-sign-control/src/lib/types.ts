@@ -39,3 +39,33 @@ export interface PdfSignControlOptions {
     pdfLoaderOptions?: PdfLoaderOptions;
     viewMode?: ViewMode;
 }
+
+/**
+ * Signature Field Data Model
+ */
+export type SignatureFieldType = 'text' | 'html' | 'image';
+
+export interface SignatureField {
+    id: string;
+    pageIndex: number;
+    /** Standard PDF Rect (points): x, y, width, height */
+    rect: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    };
+
+    type: SignatureFieldType;
+    content: string | null;
+
+    /** Custom CSS styles for the content container */
+    style?: Record<string, string>;
+
+    /** Behavior flags (default true) */
+    resizable?: boolean;
+    draggable?: boolean;
+    deletable?: boolean;
+
+    metadata?: any;
+}

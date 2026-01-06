@@ -1,6 +1,8 @@
 import { PDFPageProxy } from 'pdfjs-dist';
 import { CanvasLayer } from '../layers/CanvasLayer.js';
+import { SignatureLayer } from '../layers/SignatureLayer.js';
 import { EventBus } from '../utils/EventBus.js';
+import { SignatureField } from '../types.js';
 
 export interface PdfPageViewOptions {
     container: HTMLElement;
@@ -12,9 +14,11 @@ export interface PdfPageViewOptions {
 export class PdfPageView {
     private container: HTMLElement;
     private canvasLayer: CanvasLayer;
+    private signatureLayer: SignatureLayer;
     private pdfPage: PDFPageProxy | null = null;
     public readonly pageIndex: number; // 0-based
     private scale: number;
+    private eventBus: EventBus;
 
     public element: HTMLElement;
 
@@ -22,6 +26,7 @@ export class PdfPageView {
         this.container = options.container;
         this.pageIndex = options.pageIndex;
         this.scale = options.scale;
+        this.eventBus = options.eventBus;
 
         this.element = document.createElement('div');
         this.element.className = 'page-view';
@@ -32,6 +37,9 @@ export class PdfPageView {
         this.canvasLayer = new CanvasLayer();
         this.element.appendChild(this.canvasLayer.getElement());
 
+        this.signatureLayer = new SignatureLayer(this.eventBus);
+        this.element.appendChild(this.signatureLayer.getElement());
+
         this.container.appendChild(this.element);
     }
 
@@ -39,6 +47,10 @@ export class PdfPageView {
         this.pdfPage = pdfPage;
         this.canvasLayer.setPage(pdfPage);
         this.render();
+    }
+
+    setFields(fields: SignatureField[]) {
+        this.signatureLayer.setFields(fields);
     }
 
     async render() {
@@ -49,6 +61,7 @@ export class PdfPageView {
         this.element.style.height = `${viewport.height}px`;
 
         await this.canvasLayer.render(this.scale);
+        this.signatureLayer.setScale(this.scale);
     }
 
     /**
@@ -62,6 +75,7 @@ export class PdfPageView {
         this.element.style.height = `${viewport.height}px`;
 
         await this.canvasLayer.render(this.scale, true);
+        this.signatureLayer.setScale(this.scale);
     }
 
     /**
@@ -75,6 +89,7 @@ export class PdfPageView {
         this.element.style.height = `${viewport.height}px`;
 
         await this.canvasLayer.render(this.scale, false);
+        this.signatureLayer.setScale(this.scale);
     }
 
     updateScale(scale: number) {
@@ -100,6 +115,7 @@ export class PdfPageView {
 
     destroy() {
         this.canvasLayer.destroy();
+        this.signatureLayer.destroy();
         this.element.remove();
     }
 }

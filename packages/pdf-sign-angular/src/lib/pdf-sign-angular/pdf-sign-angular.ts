@@ -143,4 +143,22 @@ export class PdfSignAngularComponent implements OnInit, OnDestroy, OnChanges {
   getViewMode(): ViewMode {
     return this.control?.getViewMode() ?? 'scroll';
   }
+
+  // Field Management Wrappers
+
+  addField(field: any): void {
+    this.control?.addField(field);
+  }
+
+  removeField(fieldId: string): void {
+    this.control?.removeField(fieldId);
+  }
+
+  updateField(fieldId: string, updates: any): void {
+    this.control?.updateField(fieldId, updates);
+  }
+
+  setFields(fields: any[]): void {
+    this.control?.setFields(fields);
+  }
 }

@@ -60,6 +60,23 @@ export class PdfSignControl {
         this.viewer.off(event, handler);
     }
 
+    // Field Management
+    setFields(fields: any[]): void {
+        this.viewer.setFields(fields);
+    }
+
+    addField(field: any): void {
+        this.viewer.addField(field);
+    }
+
+    removeField(fieldId: string): void {
+        this.viewer.removeField(fieldId);
+    }
+
+    updateField(fieldId: string, updates: any): void {
+        this.viewer.updateField(fieldId, updates);
+    }
+
     destroy() {
         this.viewer.destroy();
     }

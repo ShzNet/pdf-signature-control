@@ -1,7 +1,7 @@
 import { EventBus } from '../utils/EventBus.js';
 import { ZoomHandler } from '../utils/ZoomHandler.js';
 import { PdfLoader, PDFDocumentProxy } from './PdfLoader.js';
-import { PdfLoaderOptions, ViewMode } from '../types.js';
+import { PdfLoaderOptions, ViewMode, SignatureField } from '../types.js';
 import { IViewModeStrategy } from '../strategies/IViewModeStrategy.js';
 import { SinglePageStrategy } from '../strategies/SinglePageStrategy.js';
 import { ScrollStrategy } from '../strategies/ScrollStrategy.js';
@@ -60,6 +60,9 @@ export class PdfViewer {
 
         this.strategy = this.createStrategy(this.currentViewMode);
         await this.strategy.init(this.container, this.pdfDocument, this.eventBus, this.currentScale);
+        if (this.fields.length > 0) {
+            this.strategy.setFields(this.fields);
+        }
     }
 
     private createStrategy(mode: ViewMode): IViewModeStrategy {
@@ -112,6 +115,37 @@ export class PdfViewer {
 
     getScale(): number {
         return this.currentScale;
+    }
+
+    // Field Management
+
+    private fields: SignatureField[] = [];
+
+    setFields(fields: SignatureField[]): void {
+        this.fields = fields;
+        this.strategy?.setFields(fields);
+    }
+
+    getFields(): SignatureField[] {
+        return this.fields;
+    }
+
+    addField(field: SignatureField): void {
+        this.fields.push(field);
+        this.strategy?.setFields(this.fields);
+    }
+
+    removeField(fieldId: string): void {
+        this.fields = this.fields.filter(f => f.id !== fieldId);
+        this.strategy?.setFields(this.fields);
+    }
+
+    updateField(fieldId: string, updates: Partial<SignatureField>): void {
+        const index = this.fields.findIndex(f => f.id === fieldId);
+        if (index !== -1) {
+            this.fields[index] = { ...this.fields[index], ...updates };
+            this.strategy?.setFields(this.fields);
+        }
     }
 
     on(event: string, handler: (data: any) => void) {

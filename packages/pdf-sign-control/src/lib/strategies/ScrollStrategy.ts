@@ -2,6 +2,7 @@ import { PDFDocumentProxy } from 'pdfjs-dist';
 import { EventBus } from '../utils/EventBus.js';
 import { PdfPageView } from '../engine/PdfPageView.js';
 import { IViewModeStrategy } from './IViewModeStrategy.js';
+import { SignatureField } from '../types.js';
 
 /**
  * Scroll viewing strategy - displays all pages in a scrollable container.
@@ -16,6 +17,7 @@ export class ScrollStrategy implements IViewModeStrategy {
     private scale = 1.0;
 
     private pageViews: PdfPageView[] = [];
+    private fields: SignatureField[] = [];
     private observer: IntersectionObserver | null = null;
     private zoomTimeout: ReturnType<typeof setTimeout> | null = null;
     private isDestroyed = false;
@@ -60,6 +62,10 @@ export class ScrollStrategy implements IViewModeStrategy {
                 scale: this.scale,
                 eventBus: this.eventBus
             });
+
+            const pageFields = this.fields.filter(f => f.pageIndex === i - 1);
+            pageView.setFields(pageFields);
+
             this.pageViews.push(pageView);
         }
 
@@ -177,6 +183,15 @@ export class ScrollStrategy implements IViewModeStrategy {
 
     getScale(): number {
         return this.scale;
+    }
+
+    setFields(fields: SignatureField[]): void {
+        this.fields = fields;
+        // Update all existing page views
+        this.pageViews.forEach(pv => {
+            const pageFields = this.fields.filter(f => f.pageIndex === pv.pageIndex);
+            pv.setFields(pageFields);
+        });
     }
 
     destroy(): void {
