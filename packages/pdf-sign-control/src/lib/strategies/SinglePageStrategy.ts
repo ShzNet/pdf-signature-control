@@ -19,11 +19,12 @@ export class SinglePageStrategy implements IViewModeStrategy {
     private pageContainer!: HTMLElement;
     private zoomTimeout: ReturnType<typeof setTimeout> | null = null;
 
-    async init(container: HTMLElement, pdfDocument: PDFDocumentProxy, eventBus: EventBus): Promise<void> {
+    async init(container: HTMLElement, pdfDocument: PDFDocumentProxy, eventBus: EventBus, initialScale?: number): Promise<void> {
         this.container = container;
         this.pdfDocument = pdfDocument;
         this.eventBus = eventBus;
         this.totalPages = pdfDocument.numPages;
+        this.scale = initialScale ?? 1.0;
 
         this.initContainer();
         await this.renderCurrentPage();

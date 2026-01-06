@@ -1,27 +1,97 @@
-/* You can add global styles to this file, and also import other style files */
-
+/* Global Styles */
 html,
 body {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #333;
 }
 
 #root {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: 50px 1fr;
+    grid-template-columns: 250px 1fr 300px;
+    grid-template-areas:
+        "header header header"
+        "left main right";
     height: 100vh;
+    overflow: hidden;
 }
 
-.controls {
-    display: flex;
-    gap: 20px;
-    padding: 12px 16px;
-    background: #333;
+/* Header */
+.app-header {
+    grid-area: header;
+    background: #2c3e50;
     color: white;
+    display: flex;
     align-items: center;
+    padding: 0 20px;
+    font-size: 18px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+/* Left Panel */
+.left-panel {
+    grid-area: left;
+    background: #f8f9fa;
+    border-right: 1px solid #e9ecef;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.panel-title {
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #6c757d;
+    font-weight: 600;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+}
+
+.thumbnail-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.thumbnail-placeholder {
+    height: 80px;
+    background: #e9ecef;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #adb5bd;
+}
+
+/* Main Content Area */
+.main-content {
+    grid-area: main;
+    display: flex;
+    flex-direction: column;
+    background: #e9ecef;
+    /* Darker bg for contrast */
+    position: relative;
+    overflow: hidden;
+}
+
+.toolbar {
+    height: 48px;
+    background: white;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 0 20px;
     flex-shrink: 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    z-index: 5;
 }
 
 .control-group {
@@ -30,36 +100,109 @@ body {
     gap: 8px;
 }
 
-.controls button {
+.divider {
+    width: 1px;
+    height: 24px;
+    background: #dee2e6;
+    margin: 0 8px;
+}
+
+button {
     padding: 6px 12px;
-    border: none;
+    border: 1px solid #ced4da;
     border-radius: 4px;
-    background: #555;
-    color: white;
+    background: white;
+    color: #495057;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
+    transition: all 0.2s;
 }
 
-.controls button:hover {
-    background: #666;
+button:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
 }
 
-.controls select {
-    padding: 6px 8px;
-    border: 1px solid #555;
+select {
+    padding: 6px 10px;
+    border: 1px solid #ced4da;
     border-radius: 4px;
-    background: #444;
-    color: white;
+    background: white;
+    font-size: 13px;
+    color: #495057;
     cursor: pointer;
 }
 
+select:focus {
+    outline: none;
+    border-color: #80bdff;
+}
+
+/* PDF Viewer Container */
 #pdf-container {
-    width: calc(100% - 32px);
-    max-width: 800px;
-    height: calc(100vh - 100px);
+    flex: 1;
     overflow: auto;
-    margin: 16px auto;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    background: #f5f5f5;
+    position: relative;
+    padding: 20px;
+    margin-top: 16px;
+    display: flex;
+    /* justify-content: center; removed to fix scroll clipping */
+    /* Center pages horizontally if they are smaller */
+}
+
+/* Right Panel */
+.right-panel {
+    grid-area: right;
+    background: white;
+    border-left: 1px solid #e9ecef;
+    display: flex;
+    flex-direction: column;
+}
+
+.properties-panel {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #495057;
+}
+
+input[type="text"],
+input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 13px;
+    box-sizing: border-box;
+    /* Important for width: 100% */
+}
+
+.action-buttons {
+    padding: 20px;
+    border-top: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.btn-primary {
+    width: 100%;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background: #0b5ed7;
 }

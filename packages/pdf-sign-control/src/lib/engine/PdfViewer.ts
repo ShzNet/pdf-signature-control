@@ -21,6 +21,8 @@ export class PdfViewer {
     private strategy: IViewModeStrategy | null = null;
     private currentViewMode: ViewMode;
 
+    private currentScale = 1.0;
+
     constructor(options: PdfViewerOptions) {
         this.container = options.container;
         this.eventBus = new EventBus();
@@ -57,7 +59,7 @@ export class PdfViewer {
         }
 
         this.strategy = this.createStrategy(this.currentViewMode);
-        await this.strategy.init(this.container, this.pdfDocument, this.eventBus);
+        await this.strategy.init(this.container, this.pdfDocument, this.eventBus, this.currentScale);
     }
 
     private createStrategy(mode: ViewMode): IViewModeStrategy {
@@ -104,11 +106,12 @@ export class PdfViewer {
     }
 
     setScale(scale: number): void {
+        this.currentScale = scale;
         this.strategy?.setScale(scale);
     }
 
     getScale(): number {
-        return this.strategy?.getScale() ?? 1.0;
+        return this.currentScale;
     }
 
     on(event: string, handler: (data: any) => void) {

@@ -18,16 +18,21 @@ export class ScrollStrategy implements IViewModeStrategy {
     private pageViews: PdfPageView[] = [];
     private observer: IntersectionObserver | null = null;
     private zoomTimeout: ReturnType<typeof setTimeout> | null = null;
+    private isDestroyed = false;
 
-    async init(container: HTMLElement, pdfDocument: PDFDocumentProxy, eventBus: EventBus): Promise<void> {
+    async init(container: HTMLElement, pdfDocument: PDFDocumentProxy, eventBus: EventBus, initialScale?: number): Promise<void> {
+        this.isDestroyed = false;
         this.container = container;
         this.pdfDocument = pdfDocument;
         this.eventBus = eventBus;
         this.totalPages = pdfDocument.numPages;
+        this.scale = initialScale ?? 1.0;
 
         this.initContainer();
         await this.renderAllPages();
-        this.setupIntersectionObserver();
+        if (!this.isDestroyed) {
+            this.setupIntersectionObserver();
+        }
     }
 
     private initContainer(): void {
@@ -39,25 +44,42 @@ export class ScrollStrategy implements IViewModeStrategy {
         this.container.style.gap = '20px';
         this.container.style.alignItems = 'center';
         this.container.style.padding = '20px';
+        this.container.scrollTop = 0;
     }
 
     private async renderAllPages(): Promise<void> {
         this.pageViews.forEach(pv => pv.destroy());
         this.pageViews = [];
 
+        // 1. Create placeholders for all pages immediately
+        // This ensures pageViews is fully populated for operations like zoom
         for (let i = 1; i <= this.totalPages; i++) {
-            const pdfPage = await this.pdfDocument.getPage(i);
-
             const pageView = new PdfPageView({
                 container: this.container,
                 pageIndex: i - 1,
                 scale: this.scale,
                 eventBus: this.eventBus
             });
-
-            pageView.setPdfPage(pdfPage);
             this.pageViews.push(pageView);
         }
+
+        // 2. Load pages in parallel (progressive rendering)
+        const loadPromises = this.pageViews.map(async (pageView, index) => {
+            if (this.isDestroyed) return;
+            try {
+                const pdfPage = await this.pdfDocument.getPage(index + 1);
+                if (!this.isDestroyed) {
+                    pageView.setPdfPage(pdfPage);
+                }
+            } catch (error) {
+                console.error(`Error loading page ${index + 1}:`, error);
+            }
+        });
+
+        // 3. Wait for all (optional, mostly for event emission)
+        await Promise.all(loadPromises);
+
+        if (this.isDestroyed) return;
 
         this.eventBus.emit('page:change', {
             page: this.currentPage,
@@ -158,6 +180,7 @@ export class ScrollStrategy implements IViewModeStrategy {
     }
 
     destroy(): void {
+        this.isDestroyed = true;
         if (this.zoomTimeout) {
             clearTimeout(this.zoomTimeout);
             this.zoomTimeout = null;

@@ -5,7 +5,7 @@ import { EventBus } from '../utils/EventBus.js';
  * Common interface for PDF viewing mode strategies.
  */
 export interface IViewModeStrategy {
-    init(container: HTMLElement, pdfDocument: PDFDocumentProxy, eventBus: EventBus): Promise<void>;
+    init(container: HTMLElement, pdfDocument: PDFDocumentProxy, eventBus: EventBus, initialScale?: number): Promise<void>;
     destroy(): void;
 
     goToPage(pageNumber: number): void;

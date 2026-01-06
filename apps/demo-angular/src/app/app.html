@@ -1,14 +1,75 @@
-<div class="container">
-    <div class="header">
-        <h2>Angular PDF Sign Demo</h2>
+<header class="app-header">
+  <span>PDF Sign Demo</span>
+</header>
+
+<aside class="left-panel">
+  <div class="panel-title">Toolbox</div>
+  <div class="action-buttons-container" style="display: flex; flex-direction: column; gap: 10px;">
+    <button class="btn-primary">Add Signature Field</button>
+    <button class="btn-secondary" disabled style="opacity: 0.5; background: #e9ecef; border: 1px solid #ced4da;">Add
+      Date Field</button>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div class="toolbar">
+    <div class="control-group">
+      <button (click)="prevPage()" title="Previous Page">◀</button>
+      <span id="page-info" style="min-width: 80px; text-align: center;">{{ pageInfo }}</span>
+      <button (click)="nextPage()" title="Next Page">▶</button>
     </div>
-    <div class="pdf-container">
-        <lib-pdf-sign-angular [options]="{
-        pdfLoaderOptions: {
-          workerSrc: 'https://unpkg.com/pdfjs-dist@5.4.530/build/pdf.worker.min.mjs',
-          cMapUrl: 'https://unpkg.com/pdfjs-dist@5.4.530/cmaps/',
-          cMapPacked: true
-        }
-      }" [onLoad]="handleLoad"></lib-pdf-sign-angular>
+
+    <div class="divider"></div>
+
+    <div class="control-group">
+      <button (click)="zoomOut()" title="Zoom Out">−</button>
+      <span id="zoom-info" style="min-width: 50px; text-align: center;">{{ zoomInfo }}</span>
+      <button (click)="zoomIn()" title="Zoom In">+</button>
     </div>
-</div>
+
+    <div class="divider"></div>
+
+    <div class="control-group">
+      <select [(ngModel)]="viewMode">
+        <option value="scroll">Scroll Mode</option>
+        <option value="single">Single Page</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="pdf-container">
+    <lib-pdf-sign-angular [src]="pdfUrl" [viewMode]="viewMode" [pdfLoaderOptions]="pdfLoaderOptions"
+      (ready)="onControlReady($event)" (pageChange)="onPageChange($event)" (scaleChange)="onScaleChange($event)"
+      (error)="onError($event)">
+    </lib-pdf-sign-angular>
+  </div>
+</main>
+
+<aside class="right-panel">
+  <div class="panel-section" style="padding: 20px; border-bottom: 1px solid #e9ecef;">
+    <div class="panel-title">Signature Fields</div>
+    <div class="field-list" style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="field-item" style="padding: 10px; background: #e9ecef; border-radius: 4px; font-size: 13px;">
+        Signature 1 (Page 1)
+      </div>
+      <div class="field-item" style="padding: 10px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 13px;">
+        Signature 2 (Page 3)
+      </div>
+    </div>
+  </div>
+  <div class="properties-panel">
+    <div class="panel-title">Properties</div>
+    <div class="form-group">
+      <label>Field Name</label>
+      <input type="text" value="Signature 1">
+    </div>
+    <div class="form-group">
+      <label>Signer</label>
+      <input type="text" value="John Doe">
+    </div>
+    <div class="form-group">
+      <label>Date</label>
+      <input type="text" [value]="currentDate" readonly>
+    </div>
+  </div>
+</aside>

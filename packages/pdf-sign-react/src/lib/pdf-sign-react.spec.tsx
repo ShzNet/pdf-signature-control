@@ -1,10 +1,9 @@
 import { render } from '@testing-library/react';
 
-import ShzPdfSignReact from './pdf-sign-react';
-
-describe('ShzPdfSignReact', () => {
+import { PdfSignReact } from './pdf-sign-react';
+describe('PdfSignReact', () => {
   it('should render successfully', () => {
-    const { baseElement } = render(<ShzPdfSignReact />);
+    const { baseElement } = render(<PdfSignReact />);
     expect(baseElement).toBeTruthy();
   });
 });
