@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build:all": "nx run-many -t build",
+    "build": "nx run-many -t build",
     "start:vanilla": "nx serve demo-vanilla",
     "start:react": "nx serve demo-react",
     "start:vue": "nx serve demo-vue",

@@ -1,24 +1,22 @@
 # Task Checklist - @shz/pdf-sign-control
 
-- [ ] **Phase 1: Project & Demo Environment Setup** <!-- id: 0 -->
+- [x] **Phase 1: Project & Demo Environment Setup** <!-- id: 0 -->
     - [x] Create `@shz/pdf-sign-control` (Core Lib) <!-- id: 1 -->
     - [x] Create `@shz/pdf-sign-react` (React Wrapper) <!-- id: 2 -->
-    - [ ] ~~Create `@shz/pdf-sign-vue` (Vue Wrapper)~~ (Deferred) <!-- id: 3 -->
     - [x] Create `@shz/pdf-sign-angular` (Angular Wrapper) <!-- id: 4 -->
     - [x] Create `@shz/pdf-sign-standalone` (Vanilla JS Wrapper) <!-- id: 5 -->
-    - [ ] **Setup Demos**:
+    - [x] **Setup Demos**:
         - [x] Create `apps/demo-react` and link wrapper <!-- id: 6 -->
-        - [ ] ~~Create `apps/demo-vue` and link wrapper~~ (Deferred) <!-- id: 7 -->
         - [x] Create `apps/demo-angular` and link wrapper <!-- id: 8 -->
-    - [x] Create `apps/demo-vanilla` (Standalone) <!-- id: 9 -->
+        - [x] Create `apps/demo-vanilla` (Standalone) <!-- id: 9 -->
 
-- [ ] **Phase 2: PDF Viewer Engine (Core Rendering)** <!-- id: 10 -->
+- [x] **Phase 2: PDF Viewer Engine (Core Rendering)** <!-- id: 10 -->
     - [x] Implement `PdfLoader` & `PdfViewer` (Core) <!-- id: 11 -->
     - [x] Implement `CanvasLayer` (PDF.js rendering) <!-- id: 12 -->
-    - [ ] **Verification**:
-        - [ ] Vanilla: Load & Render PDF <!-- id: 13 -->
-        - [ ] React: Component renders PDF <!-- id: 14 -->
-        - [ ] Angular: Module renders PDF <!-- id: 16 -->
+    - [x] **Verification**:
+        - [x] Vanilla: Load & Render PDF <!-- id: 13 -->
+        - [x] React: Component renders PDF <!-- id: 14 -->
+        - [x] Angular: Module renders PDF <!-- id: 16 -->
 
 - [ ] **Phase 3: View Modes (Scroll vs Single)** <!-- id: 17 -->
     - [ ] Implement `SinglePageStrategy` <!-- id: 18 -->

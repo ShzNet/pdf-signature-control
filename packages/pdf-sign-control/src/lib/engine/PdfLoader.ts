@@ -1,15 +1,8 @@
-
 import * as pdfjsLib from 'pdfjs-dist';
 import { GlobalWorkerOptions } from 'pdfjs-dist';
+import { PdfLoaderOptions } from '../types.js';
 
-// Define PDFJS types since we might not have full types support for all internals
 export type PDFDocumentProxy = pdfjsLib.PDFDocumentProxy;
-
-export interface PdfLoaderOptions {
-    workerSrc?: string;
-    cMapUrl?: string;
-    cMapPacked?: boolean;
-}
 
 export class PdfLoader {
     private document: PDFDocumentProxy | null = null;
@@ -18,7 +11,6 @@ export class PdfLoader {
         if (options.workerSrc) {
             GlobalWorkerOptions.workerSrc = options.workerSrc;
         } else {
-            // Default to CDN if not provided (though local is preferred)
             GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
         }
     }

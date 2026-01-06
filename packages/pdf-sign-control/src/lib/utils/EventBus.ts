@@ -1,4 +1,3 @@
-
 export type EventHandler<T = any> = (data: T) => void;
 
 export class EventBus {

@@ -1,7 +1,6 @@
-
 import { PDFPageProxy } from 'pdfjs-dist';
 import { CanvasLayer } from '../layers/CanvasLayer.js';
-import { EventBus } from '../core/EventBus.js';
+import { EventBus } from '../utils/EventBus.js';
 
 export interface PdfPageViewOptions {
     container: HTMLElement;
@@ -27,6 +26,8 @@ export class PdfPageView {
         this.element = document.createElement('div');
         this.element.className = 'page-view';
         this.element.style.position = 'relative';
+        this.element.style.flexShrink = '0'; // Prevent collapsing in flex container
+        this.element.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)'; // Visual separation
 
         // Create Layout
         this.canvasLayer = new CanvasLayer();
