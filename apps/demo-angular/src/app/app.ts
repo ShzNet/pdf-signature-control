@@ -42,12 +42,61 @@ export class App {
     this.zoomInfo = `${Math.round(data.scale * 100)}%`;
   }
 
+  newField = {
+    page: 1,
+    x: 100,
+    y: 100,
+    width: 120,
+    height: 80,
+    type: 'text',
+    content: 'Signature Placeholder',
+    moveable: true,
+    resizable: true,
+    deletable: true
+  };
+
   onFieldsChange(fields: any[]) {
-    console.log('Demo: onFieldsChange', fields);
-    this.fields = fields;
-    // Note: In Angular, if we update the same reference, change detection might catch it 
-    // depending on strategy. But 'fields' from event is usually a new array or mutated array.
-    // If loop occurs, we might need checks.
+    // Update local state from control events (e.g. drag end)
+    this.fields = [...fields];
+  }
+
+  // Force reference update to trigger child change detection
+  refreshFields() {
+    this.fields = [...this.fields];
+  }
+
+  removeField(id: string) {
+    this.fields = this.fields.filter(f => f.id !== id);
+  }
+
+  handleAddField() {
+    if (!this.pdfComponent) return;
+
+    const control = this.pdfComponent.getControl();
+    if (!control) return;
+
+    const fieldId = `field-${Date.now()}`;
+    const field = {
+      id: fieldId,
+      pageIndex: this.newField.page - 1,
+      rect: {
+        x: this.newField.x,
+        y: this.newField.y,
+        width: this.newField.width,
+        height: this.newField.height
+      },
+      type: this.newField.type,
+      content: this.newField.content,
+      draggable: this.newField.moveable,
+      resizable: this.newField.resizable,
+      deletable: this.newField.deletable,
+      style: {
+        border: '1px solid #007bff',
+        backgroundColor: 'rgba(0, 123, 255, 0.05)',
+      }
+    };
+
+    control.addField(field).catch((err: Error) => alert(err.message));
   }
 
   addExternalField() {
@@ -62,9 +111,6 @@ export class App {
       deletable: true,
       style: { border: '2px dashed blue', backgroundColor: 'rgba(0,0,255,0.1)' }
     };
-
-    // We must create a NEW array reference to trigger ngOnChanges in the child component if using OnPush
-    // or to ensure @Input change is detected.
     this.fields = [...this.fields, externalField];
   }
 

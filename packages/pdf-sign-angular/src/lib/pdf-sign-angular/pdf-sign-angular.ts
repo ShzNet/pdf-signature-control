@@ -103,6 +103,10 @@ export class PdfSignAngularComponent implements OnInit, OnDestroy, OnChanges {
       this.control?.setViewMode(this.viewMode);
     }
     if (changes['fields'] && !changes['fields'].firstChange && this.fields) {
+      const currentFields = this.control?.getFields();
+      if (JSON.stringify(currentFields) === JSON.stringify(this.fields)) {
+        return;
+      }
       this.control?.setFields(this.fields);
     }
   }

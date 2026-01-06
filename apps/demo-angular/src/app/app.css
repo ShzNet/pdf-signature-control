@@ -197,3 +197,61 @@ input[type="number"] {
 .btn-primary:hover {
     background: #0b5ed7;
 }
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+    :host {
+        grid-template-columns: 200px 1fr 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    :host {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+    }
+
+    /* Allow body scroll */
+    :host ::ng-deep html,
+    :host ::ng-deep body {
+        overflow-y: auto;
+    }
+
+    .app-header {
+        flex: 0 0 50px;
+    }
+
+    .main-content {
+        height: 60vh;
+        order: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .left-panel {
+        order: 2;
+        border-right: none;
+        border-bottom: 1px solid #dee2e6;
+        height: auto;
+        padding: 15px;
+    }
+
+    .right-panel {
+        order: 3;
+        border-left: none;
+        height: auto;
+        padding: 15px;
+    }
+
+    .toolbar {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 5px;
+    }
+
+    .toolbar .divider {
+        display: none;
+    }
+}

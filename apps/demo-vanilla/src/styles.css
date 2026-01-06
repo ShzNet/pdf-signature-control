@@ -269,3 +269,60 @@ canvas.signature-pad {
     border-radius: 4px;
     cursor: pointer;
 }
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+    #root {
+        grid-template-columns: 200px 1fr 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    #root {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+    }
+
+    html,
+    body {
+        overflow-y: auto;
+    }
+
+    .app-header {
+        flex: 0 0 50px;
+    }
+
+    .main-content {
+        height: 60vh;
+        order: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .left-panel {
+        order: 2;
+        border-right: none;
+        border-bottom: 1px solid #dee2e6;
+        height: auto;
+        padding: 15px;
+    }
+
+    .right-panel {
+        order: 3;
+        border-left: none;
+        height: auto;
+        padding: 15px;
+    }
+
+    .toolbar {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 5px;
+    }
+
+    .toolbar .divider {
+        display: none;
+    }
+}
