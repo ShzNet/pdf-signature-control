@@ -1,5 +1,4 @@
 import { SignatureField } from '../types.js';
-import { CoordinateUtils } from '../utils/CoordinateUtils.js';
 import { EventBus } from '../utils/EventBus.js';
 import { InteractionManager, DragEventData, ResizeEventData } from '../interaction/InteractionManager.js';
 
@@ -8,11 +7,9 @@ export class SignatureLayer {
     private fields: SignatureField[] = [];
     private fieldElements: Map<string, HTMLElement> = new Map();
     private scale = 1.0;
+    private pageHeight = 0; // Unscaled PDF page height (Points)
     private eventBus: EventBus;
     private interactionManager: InteractionManager;
-
-    // Callbacks
-    private onFieldClick?: (field: SignatureField, e: MouseEvent) => void;
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
@@ -43,32 +40,40 @@ export class SignatureLayer {
         this.render();
     }
 
+    setPageDimensions(width: number, height: number, scale: number) {
+        this.pageHeight = height;
+        this.scale = scale;
+        this.interactionManager.setScale(scale);
+        this.updatePositions();
+    }
+
     setScale(scale: number) {
         this.scale = scale;
         this.interactionManager.setScale(scale);
         this.updatePositions();
     }
 
-    private handleDragEnd(data: DragEventData) {
-        // Update local field cache? Or just emit?
-        const field = this.fields.find(f => f.id === data.fieldId);
-        if (field) {
-            field.rect.x = data.x;
-            field.rect.y = data.y;
-
-            this.eventBus.emit('field:update', {
-                fieldId: data.fieldId,
-                updates: { rect: field.rect }
-            });
-        }
+    private handleDragEnd(data: { fieldId: string, clientX: number, clientY: number, elementX: number, elementY: number }) {
+        // Delegate to PdfViewer to find target page and calc coords
+        this.eventBus.emit('field:drop', {
+            fieldId: data.fieldId,
+            clientX: data.clientX,
+            clientY: data.clientY,
+            elementX: data.elementX,
+            elementY: data.elementY
+        });
     }
 
     private handleResizeEnd(data: ResizeEventData) {
         const field = this.fields.find(f => f.id === data.fieldId);
         if (field) {
+            // Coordinate Conversion: Top-Left (Screen/Unscaled) -> Bottom-Left (PDF)
+            // y_pdf = page_height - y_top_left - height
+            const pdfY = this.pageHeight - data.y - data.height;
+
             field.rect = {
                 x: data.x,
-                y: data.y,
+                y: pdfY,
                 width: data.width,
                 height: data.height
             };
@@ -95,6 +100,8 @@ export class SignatureLayer {
         const div = document.createElement('div');
         div.className = 'sc-signature-field';
         div.dataset.id = field.id;
+        console.log('SignatureLayer: creating field', field.id, 'draggable:', field.draggable);
+        div.dataset.moveable = String(field.draggable !== false);
         div.style.position = 'absolute';
         div.style.pointerEvents = 'auto'; // Capture clicks on fields
         div.style.boxSizing = 'border-box';
@@ -122,6 +129,10 @@ export class SignatureLayer {
         if (field.type === 'text') {
             contentDiv.textContent = field.content || '';
             contentDiv.style.whiteSpace = 'pre-wrap';
+            contentDiv.style.fontSize = '7pt';
+            contentDiv.style.fontFamily = 'sans-serif';
+            contentDiv.style.lineHeight = '1.2';
+            contentDiv.style.textAlign = 'center';
         } else if (field.type === 'html') {
             contentDiv.innerHTML = field.content || '';
         } else if (field.type === 'image') {
@@ -152,25 +163,76 @@ export class SignatureLayer {
     }
 
     private addResizeHandles(container: HTMLElement) {
-        const positions = ['nw', 'ne', 'sw', 'se'];
+        const positions = ['nw', 'ne', 'sw', 'se', 'n', 'e', 's', 'w'];
+
         positions.forEach(pos => {
             const handle = document.createElement('div');
             handle.className = `sc-resize-handle sc-resize-${pos}`;
             handle.dataset.handle = pos;
 
-            // Handle Styling
+            // Common Handle Styling
             handle.style.position = 'absolute';
-            handle.style.width = '10px';
-            handle.style.height = '10px';
             handle.style.backgroundColor = 'white';
             handle.style.border = '1px solid #0056b3';
             handle.style.zIndex = '2';
+            handle.style.boxSizing = 'border-box';
+
+            const cornerSize = '8px';
+            const edgeThick = '6px';
+            const edgeLen = '14px';
 
             switch (pos) {
-                case 'nw': handle.style.top = '-5px'; handle.style.left = '-5px'; handle.style.cursor = 'nwse-resize'; break;
-                case 'ne': handle.style.top = '-5px'; handle.style.right = '-5px'; handle.style.cursor = 'nesw-resize'; break;
-                case 'sw': handle.style.bottom = '-5px'; handle.style.left = '-5px'; handle.style.cursor = 'nesw-resize'; break;
-                case 'se': handle.style.bottom = '-5px'; handle.style.right = '-5px'; handle.style.cursor = 'nwse-resize'; break;
+                // Corners
+                case 'nw':
+                    handle.style.top = '-4px'; handle.style.left = '-4px';
+                    handle.style.width = cornerSize; handle.style.height = cornerSize;
+                    handle.style.cursor = 'nwse-resize';
+                    break;
+                case 'ne':
+                    handle.style.top = '-4px'; handle.style.right = '-4px';
+                    handle.style.width = cornerSize; handle.style.height = cornerSize;
+                    handle.style.cursor = 'nesw-resize';
+                    break;
+                case 'sw':
+                    handle.style.bottom = '-4px'; handle.style.left = '-4px';
+                    handle.style.width = cornerSize; handle.style.height = cornerSize;
+                    handle.style.cursor = 'nesw-resize';
+                    break;
+                case 'se':
+                    handle.style.bottom = '-4px'; handle.style.right = '-4px';
+                    handle.style.width = cornerSize; handle.style.height = cornerSize;
+                    handle.style.cursor = 'nwse-resize';
+                    break;
+
+                // Edges
+                case 'n':
+                    handle.style.top = `-${parseInt(edgeThick) / 2}px`;
+                    handle.style.left = '50%';
+                    handle.style.transform = 'translateX(-50%)';
+                    handle.style.width = edgeLen; handle.style.height = edgeThick;
+                    handle.style.cursor = 'ns-resize';
+                    break;
+                case 's':
+                    handle.style.bottom = `-${parseInt(edgeThick) / 2}px`;
+                    handle.style.left = '50%';
+                    handle.style.transform = 'translateX(-50%)';
+                    handle.style.width = edgeLen; handle.style.height = edgeThick;
+                    handle.style.cursor = 'ns-resize';
+                    break;
+                case 'w':
+                    handle.style.left = `-${parseInt(edgeThick) / 2}px`;
+                    handle.style.top = '50%';
+                    handle.style.transform = 'translateY(-50%)';
+                    handle.style.width = edgeThick; handle.style.height = edgeLen;
+                    handle.style.cursor = 'ew-resize';
+                    break;
+                case 'e':
+                    handle.style.right = `-${parseInt(edgeThick) / 2}px`;
+                    handle.style.top = '50%';
+                    handle.style.transform = 'translateY(-50%)';
+                    handle.style.width = edgeThick; handle.style.height = edgeLen;
+                    handle.style.cursor = 'ew-resize';
+                    break;
             }
 
             container.appendChild(handle);
@@ -178,37 +240,56 @@ export class SignatureLayer {
     }
 
     private addDeleteButton(container: HTMLElement, id: string) {
-        const btn = document.createElement('button');
+        const btn = document.createElement('div');
         btn.className = 'sc-delete-btn';
-        btn.innerHTML = '×';
+        btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
         btn.title = 'Delete Field';
 
         // Style
         btn.style.position = 'absolute';
-        btn.style.top = '-25px';
+        btn.style.top = '0';
         btn.style.right = '0';
+        btn.style.transform = 'translate(50%, -50%)'; // Center on the top-right corner point
         btn.style.width = '20px';
         btn.style.height = '20px';
         btn.style.borderRadius = '50%';
-        btn.style.border = 'none';
-        btn.style.backgroundColor = '#dc3545';
+        btn.style.backgroundColor = '#ff4d4f';
         btn.style.color = 'white';
-        btn.style.fontSize = '14px';
-        btn.style.lineHeight = '1';
+        btn.style.display = 'flex';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
         btn.style.cursor = 'pointer';
-        btn.style.display = 'none'; // Show on hover of field? Or always?
+        btn.style.zIndex = '20';
+        btn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
 
-        // Show btn on hover of container
-        container.addEventListener('mouseenter', () => btn.style.display = 'block');
-        container.addEventListener('mouseleave', () => btn.style.display = 'none');
+        // Visibility Logic:
+        // On Desktop (mouse): Show on hover.
+        // On Touch: Always show? Or show on selection?
+        // For now, let's keep the hover logic but ensure it's robust.
+        // Actually, for better UX, let's just make it visible when the field is "active" or just always visible if it's meant to be edited.
+        // But to avoid visual clutter, let's stick to hover, but add a class 'visible' mechanism.
 
-        // Event is handled by global delegation or specific listener? 
-        // Let's rely on event bubbling and global handler, or dispatch a custom event.
-        // But for buttons, specific listener is fine.
+        btn.style.opacity = '0';
+        btn.style.transition = 'opacity 0.2s';
+
+        container.addEventListener('mouseenter', () => btn.style.opacity = '1');
+        container.addEventListener('mouseleave', () => btn.style.opacity = '0');
+
+        // Mobile fallback: If we are on a touch device, we might want to toggle this on click.
+        // But dragging handles click.
+
         btn.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation(); // Don't trigger field click
             this.eventBus.emit('field:delete', { fieldId: id });
         });
+
+        // Touch support for delete button
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.eventBus.emit('field:delete', { fieldId: id });
+        }, { passive: false });
 
         container.appendChild(btn);
     }
@@ -223,11 +304,18 @@ export class SignatureLayer {
     }
 
     private updateElementPosition(el: HTMLElement, field: SignatureField) {
-        // field.rect is unscaled PDF Points (72 dpi)
+        // field.rect is unscaled PDF Points (72 dpi), Bottom-Left Origin
+
+        // Coordinate Conversion: Bottom-Left (PDF) -> Top-Left (Screen CSS)
+        // y_top_left_unscaled = page_height - y_pdf - height_pdf
+        const yTopLeftUnscaled = this.pageHeight - field.rect.y - field.rect.height;
 
         // Wrapper: Screen Pixels (for correct interaction/hit testing)
+        // We set the CSS variable for scale here
+        el.style.setProperty('--scale', this.scale.toString());
+
         const x = field.rect.x * this.scale;
-        const y = field.rect.y * this.scale;
+        const y = yTopLeftUnscaled * this.scale;
         const w = field.rect.width * this.scale;
         const h = field.rect.height * this.scale;
 
@@ -237,11 +325,12 @@ export class SignatureLayer {
         el.style.height = `${h}px`;
 
         // Content: Unscaled Size + Scale Transform (Visual fidelity for text/html)
+        // CRITICAL FIX: Use calc() based on parent size and scale variable.
         const content = el.querySelector('.sc-field-content') as HTMLElement;
         if (content) {
-            content.style.width = `${field.rect.width}px`;
-            content.style.height = `${field.rect.height}px`;
-            content.style.transform = `scale(${this.scale})`;
+            content.style.width = 'calc(100% / var(--scale))';
+            content.style.height = 'calc(100% / var(--scale))';
+            content.style.transform = 'scale(var(--scale))';
             content.style.transformOrigin = '0 0';
         }
     }

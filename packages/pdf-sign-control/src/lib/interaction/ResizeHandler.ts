@@ -1,4 +1,4 @@
-import { SignatureField } from '../types.js';
+
 
 export interface ResizeEventData {
     fieldId: string;
@@ -17,6 +17,8 @@ export class ResizeHandler {
     private startX = 0;
     private startY = 0;
     private startRect: { left: number, top: number, width: number, height: number } = { left: 0, top: 0, width: 0, height: 0 };
+    private maxWidth = 0;
+    private maxHeight = 0;
     private scale = 1.0;
 
     private onResizeEndCallback?: (data: ResizeEventData) => void;
@@ -42,6 +44,8 @@ export class ResizeHandler {
         const parentRect = element.parentElement?.getBoundingClientRect();
 
         if (parentRect) {
+            this.maxWidth = parentRect.width;
+            this.maxHeight = parentRect.height;
             this.startRect = {
                 left: rect.left - parentRect.left,
                 top: rect.top - parentRect.top,
@@ -75,25 +79,22 @@ export class ResizeHandler {
         const minSize = 20;
 
         if (this.handle.includes('e')) {
-            newWidth = Math.max(minSize, this.startRect.width + dx);
+            const maxAllowedWidth = this.maxWidth - this.startRect.left;
+            newWidth = Math.min(Math.max(minSize, this.startRect.width + dx), maxAllowedWidth);
         }
         if (this.handle.includes('w')) {
-            const widthChange = Math.min(this.startRect.width - minSize, -dx);
-            // Logic for left resize is tricky because left position changes inversely to width
-            // Simple version:
-            if (this.startRect.width - dx >= minSize) {
-                newLeft = this.startRect.left + dx;
-                newWidth = this.startRect.width - dx;
-            }
+            const effectiveDx = Math.max(-this.startRect.left, Math.min(dx, this.startRect.width - minSize));
+            newLeft = this.startRect.left + effectiveDx;
+            newWidth = this.startRect.width - effectiveDx;
         }
         if (this.handle.includes('s')) {
-            newHeight = Math.max(minSize, this.startRect.height + dy);
+            const maxAllowedHeight = this.maxHeight - this.startRect.top;
+            newHeight = Math.min(Math.max(minSize, this.startRect.height + dy), maxAllowedHeight);
         }
         if (this.handle.includes('n')) {
-            if (this.startRect.height - dy >= minSize) {
-                newTop = this.startRect.top + dy;
-                newHeight = this.startRect.height - dy;
-            }
+            const effectiveDy = Math.max(-this.startRect.top, Math.min(dy, this.startRect.height - minSize));
+            newTop = this.startRect.top + effectiveDy;
+            newHeight = this.startRect.height - effectiveDy;
         }
 
         this.resizedElement.style.left = `${newLeft}px`;

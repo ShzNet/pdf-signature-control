@@ -67,8 +67,15 @@ export class InteractionManager {
         const field = target.closest('.sc-signature-field') as HTMLElement;
         if (field) {
             // Check if deletable button clicked?
-            if (target.classList.contains('sc-delete-btn')) {
+            if (target.closest('.sc-delete-btn')) {
                 return; // Let click handler handle it
+            }
+
+            // Check if moveable
+            console.log('InteractionManager: checking moveable', field.dataset.moveable, field.dataset.id);
+            if (field.dataset.moveable === 'false') {
+                console.log('InteractionManager: drag blocked');
+                return;
             }
 
             const id = field.dataset.id;

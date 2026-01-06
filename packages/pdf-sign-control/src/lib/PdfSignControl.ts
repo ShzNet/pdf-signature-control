@@ -65,8 +65,8 @@ export class PdfSignControl {
         this.viewer.setFields(fields);
     }
 
-    addField(field: any): void {
-        this.viewer.addField(field);
+    async addField(field: any): Promise<void> {
+        return this.viewer.addField(field);
     }
 
     removeField(fieldId: string): void {

@@ -36,11 +36,11 @@ if (app) {
         <div class="form-row" style="display: flex; gap: 5px;">
              <div class="form-group" style="flex:1">
                 <label>Width</label>
-                <input type="number" id="field-w" value="150" style="width: 100%;">
+                <input type="number" id="field-w" value="120" style="width: 100%;">
              </div>
              <div class="form-group" style="flex:1">
                 <label>Height</label>
-                <input type="number" id="field-h" value="50" style="width: 100%;">
+                <input type="number" id="field-h" value="80" style="width: 100%;">
              </div>
         </div>
         <div class="form-group">
@@ -80,7 +80,7 @@ if (app) {
         </div>
 
         <div class="flags-row" style="display: flex; flex-wrap: wrap; gap: 10px;">
-            <label><input type="checkbox" id="flag-draggable" checked> Draggable</label>
+            <label><input type="checkbox" id="flag-draggable" checked> Moveable</label>
             <label><input type="checkbox" id="flag-resizable" checked> Resizable</label>
             <label><input type="checkbox" id="flag-deletable" checked> Deletable</label>
         </div>
@@ -396,11 +396,11 @@ if (app) {
       : ''; // Empty but container exists
 
     const metaHtml = `
-        <div style="font-family: sans-serif; font-size: 10px; color: #333; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;">
-            <div style="font-weight: bold; font-size: 11px;">${name ? 'Signed by: ' + name : ''}</div>
-            ${unit ? `<div>Unit: ${unit}</div>` : ''}
-            ${phone ? `<div>Phone: ${phone}</div>` : ''}
-            <div style="color: #666; font-size: 9px;">${time}</div>
+        <div style="font-family: sans-serif; font-size: 7pt; color: #333; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;">
+            <div style="font-weight: bold; font-size: 8pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name ? 'Signed by: ' + name : ''}</div>
+            ${unit ? `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Unit: ${unit}</div>` : ''}
+            ${phone ? `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Phone: ${phone}</div>` : ''}
+            <div style="color: #666; font-size: 5pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${time}</div>
         </div>
       `;
 
@@ -513,8 +513,8 @@ if (app) {
     const page = parseInt((document.getElementById('field-page') as HTMLInputElement).value) || 1;
     const x = parseFloat((document.getElementById('field-x') as HTMLInputElement).value) || 0;
     const y = parseFloat((document.getElementById('field-y') as HTMLInputElement).value) || 0;
-    const w = parseFloat((document.getElementById('field-w') as HTMLInputElement).value) || 100;
-    const h = parseFloat((document.getElementById('field-h') as HTMLInputElement).value) || 50;
+    const w = parseFloat((document.getElementById('field-w') as HTMLInputElement).value) || 120;
+    const h = parseFloat((document.getElementById('field-h') as HTMLInputElement).value) || 80;
     const type = (document.getElementById('field-type') as HTMLSelectElement).value;
 
     let content = '';
@@ -534,7 +534,7 @@ if (app) {
 
     const field = {
       id: fieldId,
-      pageIndex: page - 1, // 0-based
+      pageIndex: page - 1,
       rect: { x, y, width: w, height: h },
       type: type as any,
       content: content,
@@ -553,7 +553,9 @@ if (app) {
     }
 
     console.log('Adding field:', field);
-    control.addField(field);
+    control.addField(field).catch((err: Error) => {
+      alert(err.message);
+    });
   };
 
   (window as any).pdfControl = control;

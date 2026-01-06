@@ -1,23 +1,25 @@
-import { SignatureField } from '../types.js';
-import { CoordinateUtils } from '../utils/CoordinateUtils.js';
+
+
 
 export interface DragEventData {
     fieldId: string;
-    x: number;
-    y: number;
+    clientX: number;
+    clientY: number;
+    elementX: number;
+    elementY: number;
 }
 
 export class DragHandler {
     private isDragging = false;
-    private draggedElement: HTMLElement | null = null;
+    private originalElement: HTMLElement | null = null;
+    private ghostElement: HTMLElement | null = null;
     private fieldId: string | null = null;
 
     // Drag state
     private startX = 0;
     private startY = 0;
-    private startLeft = 0;
-    private startTop = 0;
-    private scale = 1.0;
+    private initialGhostLeft = 0;
+    private initialGhostTop = 0;
 
     private onDragEndCallback?: (data: DragEventData) => void;
 
@@ -25,11 +27,10 @@ export class DragHandler {
         this.onDragEndCallback = onDragEnd;
     }
 
-    startDrag(e: MouseEvent | TouchEvent, element: HTMLElement, fieldId: string, scale: number) {
+    startDrag(e: MouseEvent | TouchEvent, element: HTMLElement, fieldId: string, _scale: number) {
         this.isDragging = true;
-        this.draggedElement = element;
+        this.originalElement = element;
         this.fieldId = fieldId;
-        this.scale = scale;
 
         const clientX = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
         const clientY = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
@@ -37,16 +38,30 @@ export class DragHandler {
         this.startX = clientX;
         this.startY = clientY;
 
+        // Create Ghost Element
         const rect = element.getBoundingClientRect();
-        const parentRect = element.parentElement?.getBoundingClientRect();
+        this.ghostElement = element.cloneNode(true) as HTMLElement;
+        this.ghostElement.style.position = 'fixed';
+        this.ghostElement.style.left = `${rect.left}px`;
+        this.ghostElement.style.top = `${rect.top}px`;
+        this.ghostElement.style.width = `${rect.width}px`;
+        this.ghostElement.style.height = `${rect.height}px`;
+        this.ghostElement.style.zIndex = '9999';
+        this.ghostElement.style.opacity = '0.8';
+        this.ghostElement.style.pointerEvents = 'none'; // Pass events through to underlay
+        this.ghostElement.classList.add('sc-dragging-ghost');
 
-        // Calculate relative position within parent
-        if (parentRect) {
-            this.startLeft = rect.left - parentRect.left;
-            this.startTop = rect.top - parentRect.top;
-        }
+        // Improve Ghost Visuals
+        this.ghostElement.style.boxShadow = '0 5px 15px rgba(0,0,0,0.2)';
+        this.ghostElement.style.transform = 'scale(1.02)';
 
-        element.classList.add('sc-dragging');
+        document.body.appendChild(this.ghostElement);
+
+        this.initialGhostLeft = rect.left;
+        this.initialGhostTop = rect.top;
+
+        // Hide original
+        element.style.opacity = '0';
         document.body.style.cursor = 'move';
 
         e.preventDefault();
@@ -54,7 +69,7 @@ export class DragHandler {
     }
 
     handleMove(e: MouseEvent | TouchEvent) {
-        if (!this.isDragging || !this.draggedElement) return;
+        if (!this.isDragging || !this.ghostElement) return;
 
         const clientX = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
         const clientY = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
@@ -62,40 +77,46 @@ export class DragHandler {
         const dx = clientX - this.startX;
         const dy = clientY - this.startY;
 
-        // Update position immediately for visual feedback
-        const newLeft = this.startLeft + dx;
-        const newTop = this.startTop + dy;
+        const newLeft = this.initialGhostLeft + dx;
+        const newTop = this.initialGhostTop + dy;
 
-        this.draggedElement.style.left = `${newLeft}px`;
-        this.draggedElement.style.top = `${newTop}px`;
+        this.ghostElement.style.left = `${newLeft}px`;
+        this.ghostElement.style.top = `${newTop}px`;
 
         e.preventDefault();
     }
 
     handleEnd(e: MouseEvent | TouchEvent) {
-        if (!this.isDragging || !this.draggedElement || !this.fieldId) return;
+        if (!this.isDragging || !this.ghostElement || !this.fieldId || !this.originalElement) return;
 
-        const finalLeft = parseFloat(this.draggedElement.style.left || '0');
-        const finalTop = parseFloat(this.draggedElement.style.top || '0');
+        const clientX = e instanceof MouseEvent ? e.clientX : (e as any).changedTouches?.[0]?.clientX ?? 0;
+        const clientY = e instanceof MouseEvent ? e.clientY : (e as any).changedTouches?.[0]?.clientY ?? 0;
 
-        // Convert back to PDF Point coordinates
-        // x_key = x_screen / scale
-        const pdfX = finalLeft / this.scale;
-        const pdfY = finalTop / this.scale;
+        // Capture Ghost Position before removal
+        const ghostRect = this.ghostElement.getBoundingClientRect();
+        const elementX = ghostRect.left;
+        const elementY = ghostRect.top;
+
+        // Cleanup Ghost
+        this.ghostElement.remove();
+        this.ghostElement = null;
+
+        // Restore Original
+        this.originalElement.style.opacity = '1';
+        document.body.style.cursor = '';
 
         if (this.onDragEndCallback) {
             this.onDragEndCallback({
                 fieldId: this.fieldId,
-                x: pdfX,
-                y: pdfY
+                clientX,
+                clientY,
+                elementX,
+                elementY
             });
         }
 
-        this.draggedElement.classList.remove('sc-dragging');
-        document.body.style.cursor = '';
-
         this.isDragging = false;
-        this.draggedElement = null;
+        this.originalElement = null;
         this.fieldId = null;
     }
 
