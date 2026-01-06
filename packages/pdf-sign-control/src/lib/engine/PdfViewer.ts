@@ -1,4 +1,5 @@
 import { EventBus } from '../utils/EventBus.js';
+import { ZoomHandler } from '../utils/ZoomHandler.js';
 import { PdfLoader, PDFDocumentProxy } from './PdfLoader.js';
 import { PdfLoaderOptions, ViewMode } from '../types.js';
 import { IViewModeStrategy } from '../strategies/IViewModeStrategy.js';
@@ -15,6 +16,7 @@ export class PdfViewer {
     private container: HTMLElement;
     private eventBus: EventBus;
     private loader: PdfLoader;
+    private zoomHandler: ZoomHandler;
     private pdfDocument: PDFDocumentProxy | null = null;
     private strategy: IViewModeStrategy | null = null;
     private currentViewMode: ViewMode;
@@ -24,6 +26,14 @@ export class PdfViewer {
         this.eventBus = new EventBus();
         this.loader = new PdfLoader(options.pdfLoaderOptions);
         this.currentViewMode = options.viewMode ?? 'scroll';
+
+        // Initialize zoom handler for gesture-based zoom
+        this.zoomHandler = new ZoomHandler({
+            container: this.container,
+            getScale: () => this.getScale(),
+            setScale: (scale) => this.setScale(scale)
+        });
+        this.zoomHandler.init();
     }
 
     async load(source: string | Uint8Array | ArrayBuffer): Promise<void> {
@@ -110,6 +120,7 @@ export class PdfViewer {
     }
 
     destroy() {
+        this.zoomHandler.destroy();
         this.strategy?.destroy();
         this.loader.destroy();
         this.eventBus.clear();

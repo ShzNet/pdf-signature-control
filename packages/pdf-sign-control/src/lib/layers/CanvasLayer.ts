@@ -1,10 +1,11 @@
 
-import { PDFPageProxy } from 'pdfjs-dist';
+import { PDFPageProxy, RenderTask } from 'pdfjs-dist';
 
 export class CanvasLayer {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D | null;
     private pdfPage: PDFPageProxy | null = null;
+    private renderTask: RenderTask | null = null;
 
     constructor() {
         this.canvas = document.createElement('canvas');
@@ -23,25 +24,50 @@ export class CanvasLayer {
         this.pdfPage = page;
     }
 
-    async render(scale: number): Promise<void> {
+    /**
+     * Cancel any ongoing render operation
+     */
+    cancelRender(): void {
+        if (this.renderTask) {
+            this.renderTask.cancel();
+            this.renderTask = null;
+        }
+    }
+
+    /**
+     * Render PDF page at given scale
+     * @param scale - Render scale
+     * @param isPreview - If true, renders at lower quality for quick preview
+     */
+    async render(scale: number, isPreview = false): Promise<void> {
         if (!this.pdfPage || !this.ctx) return;
 
-        const viewport = this.pdfPage.getViewport({ scale });
+        // Cancel any previous render
+        this.cancelRender();
 
-        this.canvas.width = viewport.width;
-        this.canvas.height = viewport.height;
+        // For preview mode, use lower resolution
+        const renderScale = isPreview ? scale * 0.5 : scale;
+        const viewport = this.pdfPage.getViewport({ scale: renderScale });
 
-        // Support high DPI displays
-        const outputScale = window.devicePixelRatio || 1;
+        // Support high DPI displays (skip for preview to be faster)
+        const outputScale = isPreview ? 1 : (window.devicePixelRatio || 1);
+
+        // Set canvas dimensions
+        this.canvas.width = Math.floor(viewport.width * outputScale);
+        this.canvas.height = Math.floor(viewport.height * outputScale);
+
+        // Display size should always match the requested scale
+        const displayViewport = this.pdfPage.getViewport({ scale });
+        this.canvas.style.width = `${displayViewport.width}px`;
+        this.canvas.style.height = `${displayViewport.height}px`;
+
+        // Reset transform and clear canvas before rendering
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Apply scale for high DPI
         if (outputScale !== 1) {
-            this.canvas.width = Math.floor(viewport.width * outputScale);
-            this.canvas.height = Math.floor(viewport.height * outputScale);
-            this.canvas.style.width = `${viewport.width}px`;
-            this.canvas.style.height = `${viewport.height}px`;
             this.ctx.scale(outputScale, outputScale);
-        } else {
-            this.canvas.style.width = `${viewport.width}px`;
-            this.canvas.style.height = `${viewport.height}px`;
         }
 
         const renderContext: any = {
@@ -50,18 +76,22 @@ export class CanvasLayer {
         };
 
         try {
-            await this.pdfPage.render(renderContext).promise;
+            this.renderTask = this.pdfPage.render(renderContext);
+            await this.renderTask.promise;
+            this.renderTask = null;
         } catch (error: any) {
+            this.renderTask = null;
             if (error.name === 'RenderingCancelledException') {
-                console.log('Rendering cancelled');
-            } else {
-                console.error('Render error:', error);
-                throw error;
+                // Silently ignore cancelled renders
+                return;
             }
+            console.error('Render error:', error);
+            throw error;
         }
     }
 
     destroy() {
+        this.cancelRender();
         this.canvas.remove();
         this.pdfPage = null;
     }

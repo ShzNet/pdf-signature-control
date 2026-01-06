@@ -17,6 +17,7 @@ export class ScrollStrategy implements IViewModeStrategy {
 
     private pageViews: PdfPageView[] = [];
     private observer: IntersectionObserver | null = null;
+    private zoomTimeout: ReturnType<typeof setTimeout> | null = null;
 
     async init(container: HTMLElement, pdfDocument: PDFDocumentProxy, eventBus: EventBus): Promise<void> {
         this.container = container;
@@ -137,8 +138,19 @@ export class ScrollStrategy implements IViewModeStrategy {
 
     setScale(scale: number): void {
         this.scale = scale;
-        this.pageViews.forEach(pv => pv.updateScale(scale));
+
+        // Immediate: low-quality preview for responsiveness
+        this.pageViews.forEach(pv => pv.updateScalePreview(scale));
         this.eventBus.emit('scale:change', { scale });
+
+        // Debounced: full quality render after user stops zooming
+        if (this.zoomTimeout) {
+            clearTimeout(this.zoomTimeout);
+        }
+        this.zoomTimeout = setTimeout(() => {
+            this.pageViews.forEach(pv => pv.updateScaleFull(scale));
+            this.zoomTimeout = null;
+        }, 150);
     }
 
     getScale(): number {
@@ -146,6 +158,10 @@ export class ScrollStrategy implements IViewModeStrategy {
     }
 
     destroy(): void {
+        if (this.zoomTimeout) {
+            clearTimeout(this.zoomTimeout);
+            this.zoomTimeout = null;
+        }
         if (this.observer) {
             this.observer.disconnect();
             this.observer = null;

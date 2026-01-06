@@ -17,6 +17,7 @@ export class SinglePageStrategy implements IViewModeStrategy {
 
     private pageView: PdfPageView | null = null;
     private pageContainer!: HTMLElement;
+    private zoomTimeout: ReturnType<typeof setTimeout> | null = null;
 
     async init(container: HTMLElement, pdfDocument: PDFDocumentProxy, eventBus: EventBus): Promise<void> {
         this.container = container;
@@ -91,10 +92,23 @@ export class SinglePageStrategy implements IViewModeStrategy {
 
     setScale(scale: number): void {
         this.scale = scale;
+
+        // Immediate: low-quality preview for responsiveness
         if (this.pageView) {
-            this.pageView.updateScale(scale);
+            this.pageView.updateScalePreview(scale);
         }
         this.eventBus.emit('scale:change', { scale });
+
+        // Debounced: full quality render after user stops zooming
+        if (this.zoomTimeout) {
+            clearTimeout(this.zoomTimeout);
+        }
+        this.zoomTimeout = setTimeout(() => {
+            if (this.pageView) {
+                this.pageView.updateScaleFull(scale);
+            }
+            this.zoomTimeout = null;
+        }, 150);
     }
 
     getScale(): number {
@@ -102,6 +116,10 @@ export class SinglePageStrategy implements IViewModeStrategy {
     }
 
     destroy(): void {
+        if (this.zoomTimeout) {
+            clearTimeout(this.zoomTimeout);
+            this.zoomTimeout = null;
+        }
         if (this.pageView) {
             this.pageView.destroy();
             this.pageView = null;

@@ -26,10 +26,9 @@ export class PdfPageView {
         this.element = document.createElement('div');
         this.element.className = 'page-view';
         this.element.style.position = 'relative';
-        this.element.style.flexShrink = '0'; // Prevent collapsing in flex container
-        this.element.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)'; // Visual separation
+        this.element.style.flexShrink = '0';
+        this.element.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
 
-        // Create Layout
         this.canvasLayer = new CanvasLayer();
         this.element.appendChild(this.canvasLayer.getElement());
 
@@ -45,7 +44,6 @@ export class PdfPageView {
     async render() {
         if (!this.pdfPage) return;
 
-        // Set container size based on viewport
         const viewport = this.pdfPage.getViewport({ scale: this.scale });
         this.element.style.width = `${viewport.width}px`;
         this.element.style.height = `${viewport.height}px`;
@@ -53,9 +51,51 @@ export class PdfPageView {
         await this.canvasLayer.render(this.scale);
     }
 
+    /**
+     * Quick preview render (lower quality, faster)
+     */
+    async renderPreview() {
+        if (!this.pdfPage) return;
+
+        const viewport = this.pdfPage.getViewport({ scale: this.scale });
+        this.element.style.width = `${viewport.width}px`;
+        this.element.style.height = `${viewport.height}px`;
+
+        await this.canvasLayer.render(this.scale, true);
+    }
+
+    /**
+     * Full quality render
+     */
+    async renderFull() {
+        if (!this.pdfPage) return;
+
+        const viewport = this.pdfPage.getViewport({ scale: this.scale });
+        this.element.style.width = `${viewport.width}px`;
+        this.element.style.height = `${viewport.height}px`;
+
+        await this.canvasLayer.render(this.scale, false);
+    }
+
     updateScale(scale: number) {
         this.scale = scale;
         this.render();
+    }
+
+    /**
+     * Update scale with preview mode (for progressive zoom)
+     */
+    updateScalePreview(scale: number) {
+        this.scale = scale;
+        this.renderPreview();
+    }
+
+    /**
+     * Update scale with full quality render
+     */
+    updateScaleFull(scale: number) {
+        this.scale = scale;
+        this.renderFull();
     }
 
     destroy() {
