@@ -134,6 +134,17 @@ export class SignatureLayer {
             contentDiv.style.textAlign = 'center';
         } else if (field.type === 'html') {
             contentDiv.innerHTML = field.content || '';
+        } else if (field.type === 'signature') {
+            const iframe = document.createElement('iframe');
+            // Use explicit dimensions for consistent rendering with preview
+            // The content div will be scaled, so iframe should fill it at 100%
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            // Prevents iframe from capturing mouse events, allowing drag/resize on container
+            iframe.style.pointerEvents = 'none';
+            iframe.srcdoc = field.content || '';
+            contentDiv.appendChild(iframe);
         } else if (field.type === 'image') {
             const img = document.createElement('img');
             img.src = field.content || '';

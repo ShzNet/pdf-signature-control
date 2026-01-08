@@ -1,12 +1,26 @@
-
 import { PdfSignControl, ViewMode } from '@shz/pdf-sign-control';
 // @ts-ignore
 import SignaturePad from 'signature_pad';
 import './styles.css';
+import { SignatureGenerator, SignatureConfig } from './signature-generator';
 
 const app = document.getElementById('root');
 
 if (app) {
+  // Initialize Generator
+  const sigGen = new SignatureGenerator();
+
+  // Section 1 image upload storage
+  let section1ImageBase64: string | null = null;
+
+
+  // ... (Update Select Option) ...
+  // In Header/HTML generation:
+  // <option value="signature">Signature Widget</option>
+
+  // ... (Update Add Field Logic) ...
+  // if (type === 'signature') ...
+
   // 1. Header
   const header = document.createElement('header');
   header.className = 'app-header';
@@ -47,7 +61,7 @@ if (app) {
             <label>Type</label>
             <select id="field-type" style="width: 100%;">
                 <option value="text">Text</option>
-                <option value="html">HTML (Signature)</option>
+                <option value="signature">Signature Widget</option>
                 <option value="image">Image (Upload)</option>
             </select>
         </div>
@@ -65,7 +79,7 @@ if (app) {
         </div>
         
         <div id="input-html-container" class="form-group hidden">
-            <label>Signature HTML</label>
+            <label>Signature Configuration</label>
             
             <!-- Context: Empty State -->
             <button id="open-sig-modal-btn" style="width:100%; margin-bottom: 5px;">Setup Signature</button>
@@ -135,59 +149,113 @@ if (app) {
   modal.className = 'modal-overlay hidden';
   modal.id = 'signature-modal';
   modal.innerHTML = `
-      <div class="modal-content" style="width: 600px;">
-          <h3>Setup Signature</h3>
+      <div class="modal-content sig-modal">
+          <!-- Header -->
+          <div class="sig-modal-header">
+              <h3>Thêm chữ ký</h3>
+              <button id="close-modal-btn" class="close-btn">×</button>
+          </div>
           
-          <div style="display: flex; gap: 20px;">
-              <!-- Left Col: Canvas -->
-              <div style="flex: 1;">
-                 <label>Draw Signature</label>
-                 <div class="signature-pad-container">
-                      <canvas id="signature-canvas" class="signature-pad"></canvas>
-                 </div>
-                 <div style="text-align: right; margin-top: 5px;">
-                    <button id="clear-sig-btn" style="font-size: 11px; padding: 2px 8px;">Clear Drawing</button>
-                 </div>
-              </div>
-              
-              <!-- Right Col: Metadata -->
-              <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-                  <div class="form-group" style="margin-bottom:0;">
-                      <label>Signer Name</label>
-                      <input type="text" id="sig-name" value="Nguyen Van A">
+          <div class="sig-modal-body">
+              <div class="sig-modal-content">
+                  <!-- Left: Visual Input -->
+                  <div class="sig-left-panel">
+                      <!-- Tabs -->
+                      <div class="sig-tabs">
+                          <button class="sig-tab active" data-tab="drawing">Vẽ</button>
+                          <button class="sig-tab" data-tab="certName">Tên</button>
+                          <button class="sig-tab" data-tab="image">Ảnh</button>
+                      </div>
+                      
+                      <!-- Drawing Tab -->
+                      <div id="tab-drawing" class="tab-content">
+                          <div class="signature-pad-container">
+                              <canvas id="signature-canvas" class="signature-pad"></canvas>
+                          </div>
+                          <div class="sig-controls">
+                              <div class="control-row">
+                                  <span class="control-label">Màu sắc</span>
+                                  <button class="color-btn active" data-color="#2563eb" style="background:#2563eb"></button>
+                                  <button class="color-btn" data-color="#1f2937" style="background:#1f2937"></button>
+                                  <button class="color-btn" data-color="#dc2626" style="background:#dc2626"></button>
+                              </div>
+                              <div class="control-row">
+                                  <span class="control-label">Nét bút</span>
+                                  <button class="pen-btn active" data-width="1" style="width:8px;height:8px"></button>
+                                  <button class="pen-btn" data-width="2.5" style="width:12px;height:12px"></button>
+                              </div>
+                          </div>
+                      </div>
+                      
+                      <!-- CertName Tab -->
+                      <div id="tab-certName" class="tab-content hidden">
+                          <div class="certname-input-container">
+                              <input type="text" id="section1-certname-text" placeholder="Nhập tên chứng thư" class="certname-input">
+                          </div>
+                      </div>
+                      
+                      <!-- Image Tab -->
+                      <div id="tab-image" class="tab-content hidden">
+                          <div class="image-upload-container" id="image-upload-area">
+                              <div id="section1-image-preview" class="image-preview">
+                                  <div class="upload-placeholder">
+                                      <div class="upload-icon">📁</div>
+                                      <div>Nhấn để tải ảnh lên</div>
+                                  </div>
+                              </div>
+                              <input type="file" id="section1-image-file" accept="image/*" style="display:none">
+                          </div>
+                      </div>
+                      
+                      <!-- Layout Options -->
+                      <div class="option-group">
+                          <div class="option-label">Bố cục</div>
+                          <div class="toggle-group">
+                              <button class="toggle-btn active" data-layout="horizontal">Ngang</button>
+                              <button class="toggle-btn" data-layout="vertical">Dọc</button>
+                          </div>
+                      </div>
                   </div>
-                  <div class="form-group" style="margin-bottom:0;">
-                      <label>Organization / Unit</label>
-                      <input type="text" id="sig-unit" value="IT Department">
-                  </div>
-                  <div class="form-group" style="margin-bottom:0;">
-                      <label>Phone</label>
-                      <input type="text" id="sig-phone" value="0987654321">
-                  </div>
-                  <div class="form-group" style="margin-bottom:0;">
-                      <label>Signing Time</label>
-                      <input type="text" id="sig-time" readonly style="background: #e9ecef;">
+                  
+                  <!-- Right: Info & Preview -->
+                  <div class="sig-right-panel">
+                      <!-- Info Lines -->
+                      <div class="option-group">
+                          <div class="option-label">Nội dung hiển thị</div>
+                          <div class="info-lines-list" id="info-lines-list">
+                              <div class="info-line-item">
+                                  <input type="text" class="info-line-input" value="Ký số bởi: Trần Văn Chiến" placeholder="Nhập nội dung...">
+                                  <button class="remove-line-btn" title="Xóa">×</button>
+                              </div>
+                              <div class="info-line-item">
+                                  <input type="text" class="info-line-input" value="Thời gian:" placeholder="Nhập nội dung...">
+                                  <button class="remove-line-btn" title="Xóa">×</button>
+                              </div>
+                          </div>
+                          <button class="add-line-btn" id="add-info-line-btn">+ Thêm dòng</button>
+                      </div>
+                      
+                      <!-- Font Size -->
+                      <div class="option-group">
+                          <div class="option-label">Cỡ chữ</div>
+                          <input type="range" id="font-size-slider" min="6" max="12" value="9" class="slider">
+                      </div>
+                      
+                      <!-- Preview -->
+                      <div class="option-group">
+                          <div class="option-label">Xem trước</div>
+                          <div id="modal-sig-preview" class="sig-preview">
+                              <div class="preview-placeholder">Preview</div>
+                          </div>
+                      </div>
                   </div>
               </div>
           </div>
-
-          <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
-              <label style="margin-bottom: 8px;">Layout Style</label>
-              <div style="display: flex; gap: 15px;">
-                  <label style="font-weight: normal; display: flex; align-items: center; gap: 5px;">
-                      <input type="radio" name="sig-layout" value="top" checked> 
-                      Image Top (Center Text)
-                  </label>
-                  <label style="font-weight: normal; display: flex; align-items: center; gap: 5px;">
-                      <input type="radio" name="sig-layout" value="left"> 
-                      Image Left (Text Right)
-                  </label>
-              </div>
-          </div>
-
+          
+          <!-- Footer -->
           <div class="modal-actions">
-              <button class="btn-secondary" id="close-modal-btn">Cancel</button>
-              <button class="btn-primary" id="save-sig-btn">Save & Use</button>
+              <button class="btn-secondary" id="cancel-modal-btn">Hủy</button>
+              <button class="btn-primary sig-confirm-btn" id="save-sig-btn">Xác nhận</button>
           </div>
       </div>
   `;
@@ -324,7 +392,7 @@ if (app) {
   // Variables to hold content
   let selectedImageContent: string | null = null;
 
-  typeSelect.onchange = () => {
+  const updateInputVisibility = () => {
     const type = typeSelect.value;
     contentTextDiv.classList.add('hidden');
     contentImageDiv.classList.add('hidden');
@@ -332,8 +400,12 @@ if (app) {
 
     if (type === 'text') contentTextDiv.classList.remove('hidden');
     if (type === 'image') contentImageDiv.classList.remove('hidden');
-    if (type === 'html') contentHtmlDiv.classList.remove('hidden');
+    if (type === 'signature') contentHtmlDiv.classList.remove('hidden');
   };
+
+  typeSelect.onchange = updateInputVisibility;
+  // Initialize state (in case browser preserved selection on reload)
+  updateInputVisibility();
 
   // Image Upload Logic
   const fileInput = document.getElementById('field-content-file') as HTMLInputElement;
@@ -355,15 +427,12 @@ if (app) {
   const signatureModal = document.getElementById('signature-modal') as HTMLDivElement;
   const openModalBtn = document.getElementById('open-sig-modal-btn') as HTMLButtonElement;
   const closeModalBtn = document.getElementById('close-modal-btn') as HTMLButtonElement;
-  const clearSigBtn = document.getElementById('clear-sig-btn') as HTMLButtonElement;
+  const cancelModalBtn = document.getElementById('cancel-modal-btn') as HTMLButtonElement;
   const saveSigBtn = document.getElementById('save-sig-btn') as HTMLButtonElement;
   const canvas = document.getElementById('signature-canvas') as HTMLCanvasElement;
 
-  const sigNameInput = document.getElementById('sig-name') as HTMLInputElement;
-  const sigUnitInput = document.getElementById('sig-unit') as HTMLInputElement;
-  const sigPhoneInput = document.getElementById('sig-phone') as HTMLInputElement;
-  const sigTimeInput = document.getElementById('sig-time') as HTMLInputElement;
-  const layoutRadios = document.getElementsByName('sig-layout') as NodeListOf<HTMLInputElement>;
+  // Modal preview element
+  let modalPreviewDiv = document.getElementById('modal-sig-preview');
 
   // Containers in Left Panel
   const sigPreviewContainer = document.getElementById('sig-preview-container') as HTMLDivElement;
@@ -371,175 +440,311 @@ if (app) {
   const resetSigBtn = document.getElementById('reset-sig-btn') as HTMLButtonElement;
   const htmlResultInput = document.getElementById('field-content-html') as HTMLInputElement;
 
-  // Signature Pad Instance
+  // State
   let signaturePad: any = null;
+  let currentTab = 'drawing';
+  let currentPenColor = '#2563eb';
+  let currentPenWidth = 1;
+  let currentLayout: 'horizontal' | 'vertical' = 'horizontal';
 
+  // Initialize signature pad
   function initSignaturePad() {
     if (!signaturePad && canvas) {
-      // Resize canvas
       const container = canvas.parentElement;
       if (container) {
         canvas.width = container.clientWidth;
-        canvas.height = container.clientHeight;
+        canvas.height = container.clientHeight - 4;
       }
-
       signaturePad = new SignaturePad(canvas, {
-        minWidth: 1,
-        maxWidth: 2.5,
-        penColor: 'black'
+        minWidth: currentPenWidth,
+        maxWidth: currentPenWidth * 2.5,
+        penColor: currentPenColor
       });
-
       signaturePad.addEventListener('endStroke', updateModalPreview);
     }
   }
 
-  // --- Live Preview Logic ---
-  const modalContent = signatureModal.querySelector('.modal-content');
-  let modalPreviewDiv = document.getElementById('modal-sig-preview');
-  if (!modalPreviewDiv && modalContent) {
-    modalPreviewDiv = document.createElement('div');
-    modalPreviewDiv.id = 'modal-sig-preview';
-    modalPreviewDiv.style.border = '1px dashed #ccc';
-    modalPreviewDiv.style.marginTop = '15px';
-    modalPreviewDiv.style.padding = '10px';
-    modalPreviewDiv.style.background = '#f9f9f9';
-    modalPreviewDiv.style.minHeight = '60px';
-    modalPreviewDiv.innerHTML = '<div style="color:#999; text-align:center;">Preview</div>';
+  // Tab switching logic
+  function setupTabSwitching() {
+    const tabs = document.querySelectorAll('.sig-tab');
+    const tabContents = {
+      drawing: document.getElementById('tab-drawing'),
+      certName: document.getElementById('tab-certName'),
+      image: document.getElementById('tab-image')
+    };
 
-    // Insert before Actions (Actions is last child)
-    const actions = signatureModal.querySelector('.modal-actions');
-    modalContent.insertBefore(modalPreviewDiv, actions);
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabName = (tab as HTMLElement).dataset.tab as string;
+        currentTab = tabName;
+
+        // Update tab styles
+        tabs.forEach(t => {
+          const el = t as HTMLElement;
+          if (el.dataset.tab === tabName) {
+            el.style.background = '#f59e0b';
+            el.style.color = 'white';
+            el.style.border = 'none';
+            el.classList.add('active');
+          } else {
+            el.style.background = 'white';
+            el.style.color = '#374151';
+            el.style.border = '1px solid #e5e7eb';
+            el.classList.remove('active');
+          }
+        });
+
+        // Toggle content visibility
+        Object.entries(tabContents).forEach(([key, content]) => {
+          if (content) {
+            content.classList.toggle('hidden', key !== tabName);
+          }
+        });
+
+        // Init signature pad if drawing tab
+        if (tabName === 'drawing') {
+          setTimeout(initSignaturePad, 50);
+        }
+        updateModalPreview();
+      });
+    });
   }
 
-  function generateSignatureHTML(dataUrl: string | null): string {
-    const name = sigNameInput.value || '';
-    const unit = sigUnitInput.value || '';
-    const phone = sigPhoneInput.value || '';
-    const time = sigTimeInput.value || '';
+  // Color picker
+  function setupColorPicker() {
+    const colorBtns = document.querySelectorAll('.color-btn');
+    colorBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const color = (btn as HTMLElement).dataset.color || '#2563eb';
+        currentPenColor = color;
+        colorBtns.forEach(b => (b as HTMLElement).style.borderColor = 'transparent');
+        (btn as HTMLElement).style.borderColor = color;
+        if (signaturePad) {
+          signaturePad.penColor = color;
+        }
+      });
+    });
+  }
 
-    // Get Layout
-    let layout = 'top';
-    layoutRadios.forEach(r => { if (r.checked) layout = r.value; });
+  // Pen width picker
+  function setupPenPicker() {
+    const penBtns = document.querySelectorAll('.pen-btn');
+    penBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const width = parseFloat((btn as HTMLElement).dataset.width || '1');
+        currentPenWidth = width;
+        penBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (signaturePad) {
+          signaturePad.minWidth = width;
+          signaturePad.maxWidth = width * 2.5;
+        }
+      });
+    });
+  }
 
-    // Image placeholder logic:
-    // We always render the container for the image to preserve spacing.
-    // Top layout: Image area is top 60% of height.
-    // Left layout: Image area is left 40% of width.
+  // Layout toggle
+  function setupLayoutToggle() {
+    const layoutBtns = document.querySelectorAll('.toggle-btn[data-layout]');
+    layoutBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentLayout = (btn as HTMLElement).dataset.layout as 'horizontal' | 'vertical';
+        layoutBtns.forEach(b => {
+          const el = b as HTMLElement;
+          if (el.dataset.layout === currentLayout) {
+            el.style.background = '#f59e0b';
+            el.style.color = 'white';
+          } else {
+            el.style.background = 'white';
+            el.style.color = '#374151';
+          }
+        });
+        updateModalPreview();
+      });
+    });
+  }
 
-    const imgContent = dataUrl
-      ? `<img src="${dataUrl}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`
-      : ''; // Empty but container exists
+  // Image upload
+  function setupImageUpload() {
+    const uploadArea = document.getElementById('image-upload-area');
+    const fileInput = document.getElementById('section1-image-file') as HTMLInputElement;
+    const previewDiv = document.getElementById('section1-image-preview');
 
-    const metaHtml = `
-        <div style="font-family: sans-serif; font-size: 7pt; color: #333; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;">
-            <div style="font-weight: bold; font-size: 8pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name ? 'Signed by: ' + name : ''}</div>
-            ${unit ? `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Unit: ${unit}</div>` : ''}
-            ${phone ? `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Phone: ${phone}</div>` : ''}
-            <div style="color: #666; font-size: 5pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${time}</div>
-        </div>
-      `;
+    uploadArea?.addEventListener('click', () => fileInput?.click());
+    fileInput?.addEventListener('change', (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file && previewDiv) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          section1ImageBase64 = evt.target?.result as string;
+          previewDiv.innerHTML = `<img src="${section1ImageBase64}" style="max-height:140px; max-width:100%; object-fit:contain;">`;
+          updateModalPreview();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
 
-    // STRICT 3:2 CONTAINER
-    // We use absolute positioning or flex ratios to ensure "no jumping".
+  // Font size slider
+  function setupFontSizeSlider() {
+    const slider = document.getElementById('font-size-slider') as HTMLInputElement;
+    slider?.addEventListener('input', updateModalPreview);
+    slider?.addEventListener('change', updateModalPreview);
+  }
 
-    if (layout === 'left') {
-      return `
-            <div style="display: flex; align-items: center; width: 100%; height: 100%; box-sizing: border-box; overflow: hidden;">
-                <!-- Fixed 40% width for Image -->
-                <div style="flex: 0 0 40%; height: 100%; display:flex; justify-content:center; align-items:center; padding: 2px;">
-                    ${imgContent}
-                </div>
-                <!-- Fixed 60% width for Text -->
-                <div style="flex: 0 0 60%; height: 100%; display:flex; flex-direction:column; justify-content:center; padding: 2px; overflow: hidden;">
-                    ${metaHtml}
-                </div>
-            </div>
-          `;
-    } else {
-      // Top Layout
-      return `
-            <div style="display: flex; flex-direction: column; width: 100%; height: 100%; box-sizing: border-box; overflow: hidden;">
-                <!-- Fixed 65% height for Image -->
-                <div style="flex: 0 0 65%; width: 100%; display:flex; align-items:flex-end; justify-content:center; padding: 2px;">
-                    ${imgContent}
-                </div>
-                <!-- Fixed 35% height for Text -->
-                <div style="flex: 0 0 35%; width: 100%; display:flex; flex-direction:column; justify-content:flex-start; align-items:center; padding: 2px; overflow: hidden;">
-                    <div style="text-align:center; width:100%;">
-                        ${metaHtml}
-                    </div>
-                </div>
-            </div>
-          `;
-    }
+  // CertName input
+  function setupCertNameInput() {
+    const input = document.getElementById('section1-certname-text');
+    input?.addEventListener('input', updateModalPreview);
+  }
+
+  function renderPreview(container: HTMLElement, html: string) {
+    container.innerHTML = '';
+    const iframe = document.createElement('iframe');
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    iframe.style.pointerEvents = 'none';
+    iframe.srcdoc = html;
+    container.appendChild(iframe);
   }
 
   function updateModalPreview() {
     if (!modalPreviewDiv) return;
-
-    const dataUrl = (signaturePad && !signaturePad.isEmpty()) ? signaturePad.toDataURL() : null;
-    modalPreviewDiv.innerHTML = generateSignatureHTML(dataUrl);
+    const html = generateNewSignatureHTML();
+    renderPreview(modalPreviewDiv, html);
   }
 
-  // Event Listeners for Live Preview
-  [sigNameInput, sigUnitInput, sigPhoneInput].forEach(el => {
-    el.addEventListener('keyup', updateModalPreview);
-  });
-  layoutRadios.forEach(el => {
-    el.addEventListener('change', updateModalPreview);
-  });
+  // Get info lines from inputs
+  function getInfoLines(): string[] {
+    const container = document.getElementById('info-lines-list');
+    if (!container) return [];
+    const inputs = container.querySelectorAll('.info-line-input') as NodeListOf<HTMLInputElement>;
+    return Array.from(inputs).map(input => input.value).filter(v => v.trim() !== '');
+  }
 
+  // Build SignatureConfig from modal state
+  function buildSignatureConfig(): SignatureConfig {
+    const fontSize = parseInt((document.getElementById('font-size-slider') as HTMLInputElement)?.value) || 10;
+
+    // Determine visual type and content
+    let visualType: 'image' | 'drawing' | 'text' = 'image';
+    let visualContent: string | undefined = undefined;
+
+    if (currentTab === 'drawing' && signaturePad && !signaturePad.isEmpty()) {
+      visualType = 'drawing';
+      visualContent = signaturePad.toDataURL();
+    } else if (currentTab === 'image' && section1ImageBase64) {
+      visualType = 'image';
+      visualContent = section1ImageBase64;
+    } else if (currentTab === 'certName') {
+      visualType = 'text';
+      visualContent = (document.getElementById('section1-certname-text') as HTMLInputElement)?.value || '';
+    }
+
+    return {
+      layout: currentLayout,
+      fontSize,
+      sectionRatio: 35,
+      visualType,
+      visualContent,
+      infoLines: getInfoLines()
+    };
+  }
+
+  // Generate HTML using SignatureGenerator
+  function generateNewSignatureHTML(): string {
+    const config = buildSignatureConfig();
+    return sigGen.generate(config);
+  }
+
+  // Open modal
   openModalBtn.onclick = () => {
     signatureModal.classList.remove('hidden');
-    sigTimeInput.value = new Date().toLocaleString(); // Auto update time
-
-    // Delay init canvas to allow layout
     setTimeout(() => {
       initSignaturePad();
       updateModalPreview();
-    }, 50);
+    }, 100);
   };
 
-  closeModalBtn.onclick = () => {
-    signatureModal.classList.add('hidden');
-  };
+  // Close modal
+  closeModalBtn.onclick = () => signatureModal.classList.add('hidden');
+  cancelModalBtn?.addEventListener('click', () => signatureModal.classList.add('hidden'));
 
-  clearSigBtn.onclick = () => {
-    if (signaturePad) {
-      signaturePad.clear();
-      updateModalPreview();
-    }
-  };
 
-  // Save Logic
+
+  // Save
   saveSigBtn.onclick = () => {
-    const dataUrl = (signaturePad && !signaturePad.isEmpty()) ? signaturePad.toDataURL() : null;
-    const html = generateSignatureHTML(dataUrl);
-
-    // Update Main Form
+    const html = generateNewSignatureHTML();
     htmlResultInput.value = html;
-    leftPanelPreview.innerHTML = html;
-
-    // Show Preview Container, Hide Setup Button
+    renderPreview(leftPanelPreview, html);
     openModalBtn.classList.add('hidden');
     sigPreviewContainer.classList.remove('hidden');
-
     signatureModal.classList.add('hidden');
   };
 
-  // Reset Logic
+  // Reset
   resetSigBtn.onclick = () => {
     htmlResultInput.value = '';
     leftPanelPreview.innerHTML = '';
-
     openModalBtn.classList.remove('hidden');
     sigPreviewContainer.classList.add('hidden');
-
-    // Reset Signature Pad
-    if (signaturePad) {
-      signaturePad.clear();
-    }
+    if (signaturePad) signaturePad.clear();
+    section1ImageBase64 = null;
   };
+
+  // Initialize all modal interactions
+  setupTabSwitching();
+  setupColorPicker();
+  setupPenPicker();
+  setupInfoLines();
+  setupLayoutToggle();
+  setupImageUpload();
+  setupFontSizeSlider();
+  setupCertNameInput();
+
+  // Setup info lines (add/remove/edit with live preview)
+  function setupInfoLines() {
+    const container = document.getElementById('info-lines-list');
+    const addBtn = document.getElementById('add-info-line-btn');
+
+    // Add new line
+    addBtn?.addEventListener('click', () => {
+      if (!container) return;
+      const newItem = document.createElement('div');
+      newItem.className = 'info-line-item';
+      newItem.innerHTML = `
+        <input type="text" class="info-line-input" value="" placeholder="Nhập nội dung...">
+        <button class="remove-line-btn" title="Xóa">×</button>
+      `;
+      container.appendChild(newItem);
+
+      // Focus new input
+      const newInput = newItem.querySelector('.info-line-input') as HTMLInputElement;
+      newInput?.focus();
+
+      // Add event listeners for new item
+      newInput?.addEventListener('input', updateModalPreview);
+      newItem.querySelector('.remove-line-btn')?.addEventListener('click', () => {
+        newItem.remove();
+        updateModalPreview();
+      });
+
+      updateModalPreview();
+    });
+
+    // Setup existing lines
+    container?.querySelectorAll('.info-line-item').forEach(item => {
+      const input = item.querySelector('.info-line-input') as HTMLInputElement;
+      const removeBtn = item.querySelector('.remove-line-btn');
+
+      input?.addEventListener('input', updateModalPreview);
+      removeBtn?.addEventListener('click', () => {
+        item.remove();
+        updateModalPreview();
+      });
+    });
+  }
 
   // Field Creation Logic
   const addFieldBtn = document.getElementById('add-field-btn') as HTMLButtonElement;
@@ -557,7 +762,7 @@ if (app) {
       content = (document.getElementById('field-content-text') as HTMLTextAreaElement).value;
     } else if (type === 'image') {
       content = selectedImageContent || '';
-    } else if (type === 'html') {
+    } else if (type === 'signature') {
       content = htmlResultInput.value || '<div>No Signature</div>';
     }
 

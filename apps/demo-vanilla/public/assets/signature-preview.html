@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signature Template Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #00d9ff;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Config Panel */
+        .config-panel {
+            flex: 0 0 350px;
+            background: #16213e;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .config-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #2a3a5e;
+        }
+
+        .config-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .config-section h3 {
+            color: #00d9ff;
+            margin-bottom: 12px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .config-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        .config-row label {
+            flex: 0 0 100px;
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        .config-row input[type="text"],
+        .config-row input[type="number"],
+        .config-row select {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #2a3a5e;
+            border-radius: 6px;
+            background: #0f0f23;
+            color: #fff;
+            font-size: 13px;
+        }
+
+        .config-row input:focus,
+        .config-row select:focus {
+            outline: none;
+            border-color: #00d9ff;
+        }
+
+        .config-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #00d9ff;
+        }
+
+        .info-line-config {
+            background: #0f0f23;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .info-line-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .info-line-header input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        .info-line-header strong {
+            font-size: 13px;
+        }
+
+        .info-line-inputs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .info-line-inputs input {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #2a3a5e;
+            border-radius: 4px;
+            background: #16213e;
+            color: #fff;
+            font-size: 12px;
+        }
+
+        /* Preview Panel */
+        .preview-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .preview-scale {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #aaa;
+        }
+
+        .preview-scale input {
+            width: 60px;
+            padding: 6px;
+            border: 1px solid #2a3a5e;
+            border-radius: 4px;
+            background: #0f0f23;
+            color: #fff;
+            text-align: center;
+        }
+
+        .preview-container {
+            background: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Signature Preview - uses CSS transform to scale */
+        .signature-preview {
+            transform-origin: top left;
+        }
+
+        /* ========== INLINE SIGNATURE STYLES ========== */
+        .signature-container {
+            display: flex;
+            background: white;
+            border: 0.5pt solid #ccc;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        .layout-horizontal {
+            flex-direction: column;
+        }
+
+        .layout-horizontal .section-1 {
+            height: 50%;
+            width: 100%;
+            border-bottom: 0.5pt solid #ccc;
+        }
+
+        .layout-horizontal .section-2 {
+            height: 50%;
+            width: 100%;
+        }
+
+        .layout-vertical {
+            flex-direction: row;
+        }
+
+        .layout-vertical .section-1 {
+            width: 40%;
+            height: 100%;
+            border-right: 0.5pt solid #ccc;
+        }
+
+        .layout-vertical .section-2 {
+            width: 60%;
+            height: 100%;
+        }
+
+        .section-1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        .section-1 .visual-content {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .section-1 .cert-name {
+            font-weight: bold;
+            text-align: center;
+            word-break: break-word;
+            padding: 2pt;
+            line-height: 1.2;
+        }
+
+        .section-2 {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3pt;
+            overflow: hidden;
+        }
+
+        .info-line {
+            line-height: 1.4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 1pt;
+        }
+
+        .info-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-weight: bold;
+        }
+
+        .info-line.hidden {
+            display: none;
+        }
+
+        .no-labels .info-label {
+            display: none;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d9ff, #0066ff);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 217, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: #2a3a5e;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #3a4a7e;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* Output Code */
+        .output-section {
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        .output-section h3 {
+            color: #00d9ff;
+            margin-bottom: 10px;
+        }
+
+        .output-code {
+            background: #0f0f23;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🖊️ Signature Template Preview</h1>
+
+    <div class="main-container">
+        <!-- Config Panel -->
+        <div class="config-panel">
+            <!-- Dimensions -->
+            <div class="config-section">
+                <h3>📐 Dimensions (pt)</h3>
+                <div class="config-row">
+                    <label>Width:</label>
+                    <input type="number" id="sig-width" value="200" min="50" max="500">
+                </div>
+                <div class="config-row">
+                    <label>Height:</label>
+                    <input type="number" id="sig-height" value="80" min="30" max="300">
+                </div>
+            </div>
+
+            <!-- Layout -->
+            <div class="config-section">
+                <h3>📏 Layout</h3>
+                <div class="config-row">
+                    <label>Style:</label>
+                    <select id="layout-style">
+                        <option value="horizontal">Horizontal (Top 50%)</option>
+                        <option value="vertical">Vertical (Left 40%)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Section 1 -->
+            <div class="config-section">
+                <h3>🖼️ Section 1 - Visual</h3>
+                <div class="config-row">
+                    <label>Type:</label>
+                    <select id="section1-type">
+                        <option value="none">None (Empty)</option>
+                        <option value="image">Image</option>
+                        <option value="drawing">Drawing (Signature)</option>
+                        <option value="certName">Certificate Name</option>
+                    </select>
+                </div>
+                <div class="config-row" id="section1-content-row" style="display:none;">
+                    <label>Content:</label>
+                    <input type="text" id="section1-content" placeholder="Text or base64 image">
+                </div>
+                <div class="config-row" id="section1-fontsize-row" style="display:none;">
+                    <label>Font Size:</label>
+                    <input type="number" id="section1-fontsize" value="12" min="6" max="36">
+                    <span style="color:#888">pt</span>
+                </div>
+                <div class="config-row" id="section1-file-row" style="display:none;">
+                    <label>Image:</label>
+                    <input type="file" id="section1-file" accept="image/*">
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="config-section">
+                <h3>📝 Section 2 - Info Lines</h3>
+                <div class="config-row">
+                    <label>Font Size:</label>
+                    <input type="number" id="section2-fontsize" value="8" min="5" max="20">
+                    <span style="color:#888">pt</span>
+                </div>
+                <div class="config-row">
+                    <label>Show Labels:</label>
+                    <input type="checkbox" id="section2-showlabels" checked>
+                </div>
+
+                <!-- Info Lines -->
+                <div id="info-lines-config">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="config-section">
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="updatePreview()">🔄 Update Preview</button>
+                    <button class="btn btn-secondary" onclick="copyConfig()">📋 Copy Config</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Panel -->
+        <div class="preview-panel">
+            <div class="preview-header">
+                <div class="preview-scale">
+                    <label>Preview Scale:</label>
+                    <input type="number" id="preview-scale" value="3" min="1" max="10" step="0.5">
+                    <span>x</span>
+                </div>
+            </div>
+
+            <div class="preview-container">
+                <div class="signature-preview" id="signature-preview">
+                    <!-- Preview rendered here -->
+                </div>
+            </div>
+
+            <!-- Output -->
+            <div class="output-section">
+                <h3>📄 Generated Config (JSON)</h3>
+                <pre class="output-code" id="output-json"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Default info lines
+        const defaultInfoLines = [
+            { key: 'signer', label: 'Signed by:', value: 'Nguyễn Văn A', visible: true },
+            { key: 'date', label: 'Date:', value: '08/01/2026 09:00', visible: true },
+            { key: 'reason', label: 'Reason:', value: 'Approval', visible: true },
+            { key: 'location', label: 'Location:', value: 'Ho Chi Minh City', visible: false }
+        ];
+
+        let infoLines = JSON.parse(JSON.stringify(defaultInfoLines));
+        let section1ImageBase64 = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderInfoLinesConfig();
+            setupEventListeners();
+            updatePreview();
+        });
+
+        function setupEventListeners() {
+            // Auto-update on change
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    if (input.id !== 'section1-file') {
+                        updatePreview();
+                    }
+                });
+            });
+
+            // Section 1 type change
+            document.getElementById('section1-type').addEventListener('change', (e) => {
+                const type = e.target.value;
+                document.getElementById('section1-content-row').style.display =
+                    type === 'certName' ? 'flex' : 'none';
+                document.getElementById('section1-fontsize-row').style.display =
+                    type === 'certName' ? 'flex' : 'none';
+                document.getElementById('section1-file-row').style.display =
+                    (type === 'image' || type === 'drawing') ? 'flex' : 'none';
+                updatePreview();
+            });
+
+            // File upload
+            document.getElementById('section1-file').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        section1ImageBase64 = event.target.result;
+                        updatePreview();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Preview scale
+            document.getElementById('preview-scale').addEventListener('input', updatePreview);
+        }
+
+        function renderInfoLinesConfig() {
+            const container = document.getElementById('info-lines-config');
+            container.innerHTML = infoLines.map((line, idx) => `
+                <div class="info-line-config">
+                    <div class="info-line-header">
+                        <input type="checkbox" ${line.visible ? 'checked' : ''} 
+                            onchange="updateInfoLine(${idx}, 'visible', this.checked)">
+                        <strong>${line.key.toUpperCase()}</strong>
+                    </div>
+                    <div class="info-line-inputs">
+                        <input type="text" placeholder="Label" value="${line.label}"
+                            onchange="updateInfoLine(${idx}, 'label', this.value)">
+                        <input type="text" placeholder="Value" value="${line.value}"
+                            onchange="updateInfoLine(${idx}, 'value', this.value)">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateInfoLine(idx, field, value) {
+            infoLines[idx][field] = value;
+            updatePreview();
+        }
+
+        function getConfig() {
+            return {
+                layout: document.getElementById('layout-style').value,
+                width: parseInt(document.getElementById('sig-width').value),
+                height: parseInt(document.getElementById('sig-height').value),
+                section1: {
+                    type: document.getElementById('section1-type').value,
+                    content: document.getElementById('section1-type').value === 'certName'
+                        ? document.getElementById('section1-content').value
+                        : section1ImageBase64,
+                    fontSize: parseInt(document.getElementById('section1-fontsize').value)
+                },
+                section2: {
+                    fontSize: parseInt(document.getElementById('section2-fontsize').value),
+                    showLabels: document.getElementById('section2-showlabels').checked,
+                    lines: infoLines
+                }
+            };
+        }
+
+        function updatePreview() {
+            const config = getConfig();
+            const scale = parseFloat(document.getElementById('preview-scale').value) || 3;
+
+            // Build Section 1 content
+            let section1Content = '';
+            let section1Class = '';
+            if (config.section1.type === 'none') {
+                section1Class = 'empty';
+            } else if (config.section1.type === 'certName') {
+                section1Content = `<div class="cert-name" style="font-size:${config.section1.fontSize}pt">${config.section1.content || 'Certificate Name'}</div>`;
+            } else if ((config.section1.type === 'image' || config.section1.type === 'drawing') && config.section1.content) {
+                section1Content = `<img class="visual-content" src="${config.section1.content}" alt="Signature">`;
+            }
+
+            // Build Section 2 content
+            const section2Class = config.section2.showLabels ? '' : 'no-labels';
+            const section2Content = config.section2.lines
+                .map(line => {
+                    const hiddenClass = line.visible ? '' : 'hidden';
+                    return `<div class="info-line ${hiddenClass}" style="font-size:${config.section2.fontSize}pt">
+                        <span class="info-label">${line.label} </span>
+                        <span class="info-value">${line.value}</span>
+                    </div>`;
+                })
+                .join('');
+
+            // Build full HTML
+            const html = `
+                <div class="signature-container layout-${config.layout}" 
+                     style="width:${config.width}pt; height:${config.height}pt;">
+                    <div class="section-1 ${section1Class}">
+                        ${section1Content}
+                    </div>
+                    <div class="section-2 ${section2Class}">
+                        ${section2Content}
+                    </div>
+                </div>
+            `;
+
+            // Render preview with scale
+            const previewContainer = document.getElementById('signature-preview');
+            previewContainer.innerHTML = html;
+            previewContainer.style.transform = `scale(${scale})`;
+
+            // Update JSON output
+            const outputConfig = { ...config };
+            if (outputConfig.section1.content && outputConfig.section1.content.length > 100) {
+                outputConfig.section1.content = outputConfig.section1.content.substring(0, 100) + '...[base64 truncated]';
+            }
+            document.getElementById('output-json').textContent = JSON.stringify(outputConfig, null, 2);
+        }
+
+        function copyConfig() {
+            const config = getConfig();
+            navigator.clipboard.writeText(JSON.stringify(config, null, 2)).then(() => {
+                alert('Config copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+
+</html>

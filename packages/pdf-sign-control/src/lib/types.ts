@@ -45,7 +45,7 @@ export interface PdfSignControlOptions {
 /**
  * Signature Field Data Model
  */
-export type SignatureFieldType = 'text' | 'html' | 'image';
+export type SignatureFieldType = 'text' | 'html' | 'image' | 'signature';
 
 export interface SignatureField {
     id: string;

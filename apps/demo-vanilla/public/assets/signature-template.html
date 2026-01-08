@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* ============================================
+           SIGNATURE TEMPLATE - PDF COMPATIBLE
+           Uses fixed pt units for iText .NET consistency
+           ============================================ */
+
+        /* Global Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        /* Container - uses pt for PDF consistency */
+        .signature-container {
+            width: {
+                    {
+                    WIDTH
+                }
+            }
+
+            ;
+
+            height: {
+                    {
+                    HEIGHT
+                }
+            }
+
+            ;
+            display: flex;
+            background: white;
+            border: 0.5pt solid #ccc;
+            overflow: hidden;
+        }
+
+        /* ========== LAYOUT OPTIONS ========== */
+
+        /* Horizontal: Section 1 on top (50%), Section 2 bottom (50%) */
+        .layout-horizontal {
+            flex-direction: column;
+        }
+
+        .layout-horizontal .section-1 {
+            height: 50%;
+            width: 100%;
+            border-bottom: 0.5pt solid #ccc;
+        }
+
+        .layout-horizontal .section-2 {
+            height: 50%;
+            width: 100%;
+        }
+
+        /* Vertical: Section 1 left (40%), Section 2 right (60%) */
+        .layout-vertical {
+            flex-direction: row;
+        }
+
+        .layout-vertical .section-1 {
+            width: 40%;
+            height: 100%;
+            border-right: 0.5pt solid #ccc;
+        }
+
+        .layout-vertical .section-2 {
+            width: 60%;
+            height: 100%;
+        }
+
+        /* ========== SECTION 1: Visual Content ========== */
+        .section-1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        /* Image/Drawing content */
+        .section-1 .visual-content {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* Certificate Name text */
+        .section-1 .cert-name {
+            font-size: {
+                    {
+                    SECTION1_FONT_SIZE
+                }
+            }
+
+            ;
+            font-weight: bold;
+            text-align: center;
+            word-break: break-word;
+            padding: 2pt;
+            line-height: 1.2;
+        }
+
+        /* Empty state */
+        .section-1.empty {
+            background: transparent;
+        }
+
+        /* ========== SECTION 2: Info Lines ========== */
+        .section-2 {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3pt;
+            overflow: hidden;
+        }
+
+        .info-line {
+            font-size: {
+                    {
+                    SECTION2_FONT_SIZE
+                }
+            }
+
+            ;
+            line-height: 1.4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 1pt;
+        }
+
+        .info-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-weight: bold;
+        }
+
+        .info-value {
+            /* normal weight */
+        }
+
+        /* Hidden line */
+        .info-line.hidden {
+            display: none;
+        }
+
+        /* No labels mode */
+        .no-labels .info-label {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="signature-container {{LAYOUT_CLASS}}">
+        <!-- Section 1: Visual Content (Image/Drawing/CertName/Empty) -->
+        <div class="section-1 {{SECTION1_CLASS}}">
+            {{SECTION1_CONTENT}}
+        </div>
+
+        <!-- Section 2: Info Lines -->
+        <div class="section-2 {{SECTION2_CLASS}}">
+            {{SECTION2_CONTENT}}
+        </div>
+    </div>
+</body>
+
+</html>
