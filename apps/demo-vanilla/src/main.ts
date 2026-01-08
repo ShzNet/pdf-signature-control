@@ -238,7 +238,7 @@ if (app) {
                       <!-- Font Size -->
                       <div class="option-group">
                           <div class="option-label">Cỡ chữ</div>
-                          <input type="range" id="font-size-slider" min="6" max="12" value="9" class="slider">
+                          <input type="range" id="font-size-slider" min="3" max="9" value="5" class="slider">
                       </div>
                       
                       <!-- Preview -->

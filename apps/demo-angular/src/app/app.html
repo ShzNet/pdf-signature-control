@@ -3,59 +3,40 @@
 </header>
 
 <aside class="left-panel">
-  <div class="panel-title">Create Field</div>
-  <div class="form-container" style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
-    <div class="form-group">
-      <label>Page</label>
-      <input type="number" [(ngModel)]="newField.page" min="1" style="width: 100%;">
-    </div>
-    <div class="form-row" style="display: flex; gap: 5px;">
-      <div class="form-group" style="flex: 1;">
-        <label>X (pt)</label>
-        <input type="number" [(ngModel)]="newField.x" style="width: 100%;">
-      </div>
-      <div class="form-group" style="flex: 1;">
-        <label>Y (pt)</label>
-        <input type="number" [(ngModel)]="newField.y" style="width: 100%;">
-      </div>
-    </div>
-    <div class="form-row" style="display: flex; gap: 5px;">
-      <div class="form-group" style="flex: 1;">
-        <label>Width</label>
-        <input type="number" [(ngModel)]="newField.width" style="width: 100%;">
-      </div>
-      <div class="form-group" style="flex: 1;">
-        <label>Height</label>
-        <input type="number" [(ngModel)]="newField.height" style="width: 100%;">
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Type</label>
-      <select [(ngModel)]="newField.type" style="width: 100%;">
-        <option value="text">Text</option>
-        <option value="html">HTML</option>
-        <option value="image">Image</option>
-      </select>
-    </div>
+  <div class="panel-title">Signature</div>
+  <button class="btn-primary" (click)="openModal()" style="margin-bottom: 20px;">
+    + Add Signature Field
+  </button>
 
+  <div class="panel-title">Generic Field</div>
+  <div class="form-container" style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
+    <!-- Keep generic add field for testing -->
+    <div class="form-row" style="display: flex; gap: 5px;">
+      <div class="form-group" style="flex: 1;">
+        <label>Page</label>
+        <input type="number" [(ngModel)]="newField.page" min="1" style="width: 100%;">
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>Type</label>
+        <select [(ngModel)]="newField.type" style="width: 100%;">
+          <option value="text">Text</option>
+          <option value="html">HTML</option>
+          <option value="image">Image</option>
+        </select>
+      </div>
+    </div>
     <div class="form-group">
       <label>Content</label>
-      <textarea rows="3" [(ngModel)]="newField.content" style="width: 100%;"></textarea>
+      <input type="text" [(ngModel)]="newField.content" style="width: 100%;">
     </div>
 
     <div class="flags-row" style="display: flex; flex-wrap: wrap; gap: 10px;">
-      <label>
-        <input type="checkbox" [(ngModel)]="newField.moveable"> Moveable
-      </label>
-      <label>
-        <input type="checkbox" [(ngModel)]="newField.resizable"> Resizable
-      </label>
-      <label>
-        <input type="checkbox" [(ngModel)]="newField.deletable"> Deletable
-      </label>
+      <label><input type="checkbox" [(ngModel)]="newField.draggable"> Moveable</label>
+      <label><input type="checkbox" [(ngModel)]="newField.resizable"> Resizable</label>
+      <label><input type="checkbox" [(ngModel)]="newField.deletable"> Deletable</label>
     </div>
 
-    <button class="btn-primary" (click)="handleAddField()" style="margin-top: 10px;">Add Field</button>
+    <button class="btn-secondary" (click)="handleAddField()" style="width: 100%;">Add Generic Field</button>
   </div>
 </aside>
 
@@ -95,7 +76,7 @@
 
 <aside class="right-panel">
   <div class="properties-panel">
-    <div class="panel-title">Signature Fields</div>
+    <div class="panel-title">Fields</div>
     <div class="field-list" style="display: flex; flex-direction: column; gap: 8px;">
       <div *ngIf="fields.length === 0" style="color: #999; font-size: 12px; font-style: italic; padding: 10px;">
         No fields yet
@@ -111,37 +92,6 @@
             (click)="removeField(field.id)">X</button>
         </div>
 
-        <!-- Content Editor -->
-        <div style="margin-bottom: 5px;">
-          <label style="font-size: 10px; margin-bottom: 2px;">Content</label>
-          <input type="text" [(ngModel)]="field.content" (ngModelChange)="refreshFields()"
-            style="width: 100%; padding: 4px; font-size: 11px;">
-        </div>
-
-        <!-- Rect Editor -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 5px;">
-          <div>
-            <label style="font-size: 10px; margin-bottom: 2px;">X</label>
-            <input type="number" [(ngModel)]="field.rect.x" (ngModelChange)="refreshFields()"
-              style="width: 100%; padding: 4px; font-size: 11px;">
-          </div>
-          <div>
-            <label style="font-size: 10px; margin-bottom: 2px;">Y</label>
-            <input type="number" [(ngModel)]="field.rect.y" (ngModelChange)="refreshFields()"
-              style="width: 100%; padding: 4px; font-size: 11px;">
-          </div>
-          <div>
-            <label style="font-size: 10px; margin-bottom: 2px;">W</label>
-            <input type="number" [(ngModel)]="field.rect.width" (ngModelChange)="refreshFields()"
-              style="width: 100%; padding: 4px; font-size: 11px;">
-          </div>
-          <div>
-            <label style="font-size: 10px; margin-bottom: 2px;">H</label>
-            <input type="number" [(ngModel)]="field.rect.height" (ngModelChange)="refreshFields()"
-              style="width: 100%; padding: 4px; font-size: 11px;">
-          </div>
-        </div>
-
         <!-- Props Checkboxes -->
         <div style="display: flex; gap: 8px; font-size: 10px;">
           <label>
@@ -153,16 +103,129 @@
         </div>
       </div>
     </div>
-
-    <div style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px;">
-      <div style="font-size: 11px; font-weight: bold; margin-bottom: 5px;">Model Sync Test</div>
-      <button class="btn-secondary" (click)="addExternalField()"
-        style="width: 100%; font-size: 11px; padding: 5px; background: #6c757d; color: white; border: none; border-radius: 4px;">
-        + Add via Props (External)
-      </button>
-      <div style="font-size: 10px; color: #666; margin-top: 5px;">
-        Adds a field by modifying the <code>fields</code> prop directly.
-      </div>
-    </div>
   </div>
 </aside>
+
+<!-- Signature Modal -->
+<div class="modal-overlay" *ngIf="isModalOpen">
+  <div class="modal-content sig-modal">
+    <div class="sig-modal-header">
+      <h3>Cấu hình chữ ký</h3>
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+
+    <div class="sig-modal-body">
+      <!-- Tabs -->
+      <div class="sig-tabs">
+        <div class="sig-tab" [class.active]="activeTab === 'drawing'" (click)="switchTab('drawing')">Vẽ tay</div>
+        <div class="sig-tab" [class.active]="activeTab === 'certName'" (click)="switchTab('certName')">Tên</div>
+        <div class="sig-tab" [class.active]="activeTab === 'image'" (click)="switchTab('image')">Tải ảnh</div>
+      </div>
+
+      <div class="sig-modal-content">
+        <!-- Left Panel -->
+        <div class="sig-left-panel">
+          <!-- Drawing Tab -->
+          <div class="tab-content" [class.hidden]="activeTab !== 'drawing'">
+            <div class="signature-pad-container">
+              <canvas #signatureCanvas class="signature-pad"></canvas>
+            </div>
+
+            <div class="sig-controls">
+              <div class="control-row">
+                <button class="color-btn" style="background:#2563eb" [class.active]="drawingColor === '#2563eb'"
+                  (click)="setDrawingColor('#2563eb')"></button>
+                <button class="color-btn" style="background:#000000" [class.active]="drawingColor === '#000000'"
+                  (click)="setDrawingColor('#000000')"></button>
+                <button class="color-btn" style="background:#dc2626" [class.active]="drawingColor === '#dc2626'"
+                  (click)="setDrawingColor('#dc2626')"></button>
+              </div>
+              <div class="control-row">
+                <button class="pen-btn" [class.active]="penWidth === 1" (click)="setPenWidth(1)"
+                  style="width:24px; height:24px; display:flex; align-items:center; justify-content:center;">
+                  <div style="width:4px; height:4px; background:white; border-radius:50%;"></div>
+                </button>
+                <button class="pen-btn" [class.active]="penWidth === 3" (click)="setPenWidth(3)"
+                  style="width:28px; height:28px; display:flex; align-items:center; justify-content:center;">
+                  <div style="width:8px; height:8px; background:white; border-radius:50%;"></div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Name Tab -->
+          <div class="tab-content" [class.hidden]="activeTab !== 'certName'">
+            <div class="certname-input-container">
+              <input type="text" class="certname-input" placeholder="Nhập tên của bạn" [(ngModel)]="certName"
+                (input)="updatePreview()">
+            </div>
+          </div>
+
+          <!-- Image Tab -->
+          <div class="tab-content" [class.hidden]="activeTab !== 'image'">
+            <div class="image-upload-container" (click)="triggerImageUpload()">
+              <input type="file" id="sig-image-upload" hidden accept="image/*" (change)="onImageSelected($event)">
+              <div class="image-preview" *ngIf="selectedImage; else uploadPlaceholder">
+                <img [src]="selectedImage" style="max-width:100%; max-height:100%; object-fit:contain;">
+              </div>
+              <ng-template #uploadPlaceholder>
+                <div class="upload-placeholder">
+                  <div class="upload-icon">☁️</div>
+                  <div>Click để chọn ảnh</div>
+                  <div style="font-size:12px; margin-top:4px;">(PNG, JPG, SVG)</div>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Layout Options -->
+          <div class="option-group" style="margin-top: 20px;">
+            <div class="option-label">Bố cục</div>
+            <div class="toggle-group">
+              <button class="toggle-btn" [class.active]="sigLayout === 'horizontal'"
+                (click)="sigLayout = 'horizontal'; updatePreview()">Ngang</button>
+              <button class="toggle-btn" [class.active]="sigLayout === 'vertical'"
+                (click)="sigLayout = 'vertical'; updatePreview()">Dọc</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="sig-right-panel">
+
+          <!-- Information Lines -->
+          <div class="option-group">
+            <div class="option-label">Nội dung hiển thị</div>
+            <div class="info-lines-list">
+              <div *ngFor="let line of infoLines; let i = index; trackBy: trackByIndex" class="info-line-item">
+                <input type="text" class="info-line-input" [value]="line" (input)="updateInfoLine(i, $event)">
+                <button class="remove-line-btn" (click)="removeInfoLine(i)">×</button>
+              </div>
+              <button class="add-line-btn" (click)="addInfoLine()">+ Thêm dòng</button>
+            </div>
+          </div>
+
+          <!-- Font Size -->
+          <div class="option-group">
+            <div class="option-label">Cỡ chữ</div>
+            <input type="range" min="3" max="9" class="slider" [(ngModel)]="sigFontSize" (input)="updatePreview()">
+          </div>
+
+          <!-- Preview -->
+          <div class="option-group">
+            <div class="option-label">Xem trước</div>
+            <div class="sig-preview">
+              <iframe [srcdoc]="previewHtml" style="width:100%; height:100%; border:none;"></iframe>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="closeModal()">Hủy bỏ</button>
+      <button class="sig-confirm-btn" (click)="saveSignature()">Đồng ý</button>
+    </div>
+  </div>
+</div>

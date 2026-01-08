@@ -89,6 +89,12 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
     getViewMode: () => controlRef.current?.getViewMode() ?? 'scroll',
   }));
 
+  // Keep track of latest props for event handlers to avoid stale closures
+  const propsRef = useRef(props);
+  useEffect(() => {
+    propsRef.current = props;
+  });
+
   useEffect(() => {
     if (!containerRef.current || controlRef.current) return;
 
@@ -99,32 +105,20 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
       fields: props.fields,
     });
 
-    // Setup event listeners
-    if (props.onPageChange) {
-      controlRef.current.on('page:change', (data: { page: number; total: number }) => {
-        props.onPageChange?.(data.page, data.total);
-      });
-    }
+    // Setup event listeners with ref access
+    controlRef.current.on('page:change', (data: { page: number; total: number }) => {
+      propsRef.current.onPageChange?.(data.page, data.total);
+    });
 
-    if (props.onScaleChange) {
-      controlRef.current.on('scale:change', (data: { scale: number }) => {
-        props.onScaleChange?.(data.scale);
-      });
-    }
+    controlRef.current.on('scale:change', (data: { scale: number }) => {
+      propsRef.current.onScaleChange?.(data.scale);
+    });
 
     // Field Events
-    if (props.onFieldAdd) {
-      controlRef.current.on('field:add', (field: any) => props.onFieldAdd?.(field));
-    }
-    if (props.onFieldRemove) {
-      controlRef.current.on('field:remove', (data: any) => props.onFieldRemove?.(data));
-    }
-    if (props.onFieldUpdate) {
-      controlRef.current.on('field:update', (data: any) => props.onFieldUpdate?.(data));
-    }
-    if (props.onFieldsChange) {
-      controlRef.current.on('fields:change', (fields: any[]) => props.onFieldsChange?.(fields));
-    }
+    controlRef.current.on('field:add', (field: any) => propsRef.current.onFieldAdd?.(field));
+    controlRef.current.on('field:remove', (data: any) => propsRef.current.onFieldRemove?.(data));
+    controlRef.current.on('field:update', (data: any) => propsRef.current.onFieldUpdate?.(data));
+    controlRef.current.on('fields:change', (fields: any[]) => propsRef.current.onFieldsChange?.(fields));
 
     if (props.onReady) {
       props.onReady(controlRef.current);
