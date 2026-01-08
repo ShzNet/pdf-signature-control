@@ -1,26 +1,24 @@
-
-import { Component, ViewChild, ElementRef, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { PdfSignAngularComponent } from '@shz/pdf-sign-angular';
 import { PdfSignControl, PdfSignControlOptions, ViewMode } from '@shz/pdf-sign-control';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import SignaturePad from 'signature_pad';
-import { SignatureGenerator, SignatureConfig } from './signature-generator';
+import { DomSanitizer } from '@angular/platform-browser';
+import { LeftPanelComponent } from './components/left-panel/left-panel.component';
+import { RightPanelComponent } from './components/right-panel/right-panel.component';
+import { SignatureModalComponent } from './components/signature-modal/signature-modal.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, PdfSignAngularComponent],
+  imports: [CommonModule, FormsModule, PdfSignAngularComponent, LeftPanelComponent, RightPanelComponent, SignatureModalComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App {
   @ViewChild(PdfSignAngularComponent) pdfComponent!: PdfSignAngularComponent;
-  @ViewChild('signatureCanvas') signatureCanvas!: ElementRef<HTMLCanvasElement>;
 
-  constructor(public sanitizer: DomSanitizer, private zone: NgZone, private cdr: ChangeDetectorRef) { }
-
+  constructor(public sanitizer: DomSanitizer) { }
 
   pdfUrl = 'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf';
   viewMode: ViewMode = 'scroll';
@@ -36,17 +34,7 @@ export class App {
   };
 
   fields: any[] = [];
-
-  // Signature Modal State
   isModalOpen = false;
-  isGenericMode = false;
-  activeTab: 'drawing' | 'certName' | 'image' = 'drawing';
-  signaturePad?: SignaturePad;
-
-  // Config
-  sigLayout: 'horizontal' | 'vertical' = 'horizontal';
-  sigFontSize = 5;
-  infoLines: string[] = ['Signed by: Alice', 'Date:'];
 
   // Generic Field Form State
   newField = {
@@ -61,27 +49,6 @@ export class App {
     resizable: true,
     deletable: true
   };
-
-  onTypeChange(type: string) {
-    if (type === 'signature') {
-      this.newField.content = '';
-    } else if (type === 'text') {
-      this.newField.content = 'Text Field';
-    } else {
-      this.newField.content = '';
-    }
-  }
-
-  onGenericImageSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.newField.content = e.target?.result as string;
-      };
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
 
   handleAddField() {
     if (!this.pdfComponent) return;
@@ -112,16 +79,6 @@ export class App {
     control.addField(field as any).catch((err: Error) => alert(err.message));
   }
 
-  // Tab Inputs
-  certName = '';
-  drawingColor = '#2563eb';
-  penWidth = 1;
-  selectedImage: string | null = null;
-
-  // Preview
-  previewHtml: SafeHtml | string = '';
-  private sigGen = new SignatureGenerator();
-
   onControlReady(control: PdfSignControl) {
     console.log('PDF Control ready:', control);
   }
@@ -151,6 +108,7 @@ export class App {
   }
 
   refreshFields() {
+    // Trigger update if needed, usually references handled by component
     this.fields = [...this.fields];
   }
 
@@ -159,173 +117,21 @@ export class App {
   }
 
   // === Modal Logic ===
-
-  openModal(genericMode = false) {
-    this.isGenericMode = genericMode;
+  openSignatureModal() {
     this.isModalOpen = true;
-    this.updatePreview();
-
-    // Defer generic initialization to ensure ViewChild is available
-    setTimeout(() => {
-      this.initSignaturePad();
-      this.updatePreview();
-    }, 100);
   }
 
-  closeModal() {
+  closeSignatureModal() {
     this.isModalOpen = false;
   }
 
-  switchTab(tab: 'drawing' | 'certName' | 'image') {
-    this.activeTab = tab;
-    if (tab === 'drawing') {
-      setTimeout(() => this.resizeCanvas(), 50);
-    }
-    this.updatePreview();
+  onSignatureSave(html: string) {
+    this.newField.content = html;
+    this.closeSignatureModal();
   }
 
-  // Info Lines
-  addInfoLine() {
-    this.infoLines.push('');
-    this.updatePreview();
-  }
-
-  removeInfoLine(index: number) {
-    this.infoLines.splice(index, 1);
-    this.updatePreview();
-  }
-
-  updateInfoLine(index: number, event: Event) {
-    const val = (event.target as HTMLInputElement).value;
-    this.infoLines[index] = val;
-    this.updatePreview();
-  }
-
-  trackByIndex(index: number, obj: any): any {
-    return index;
-  }
-
-  // Signature Pad
-  initSignaturePad() {
-    if (this.signatureCanvas && !this.signaturePad) {
-      this.signaturePad = new SignaturePad(this.signatureCanvas.nativeElement, {
-        backgroundColor: 'rgba(255, 255, 255, 0)',
-        penColor: this.drawingColor,
-        minWidth: this.penWidth,
-        maxWidth: this.penWidth + 1.5
-      });
-
-      this.signaturePad.addEventListener('endStroke', () => {
-        this.zone.run(() => this.updatePreview());
-      });
-      this.resizeCanvas();
-    }
-  }
-
-  resizeCanvas() {
-    const canvas = this.signatureCanvas?.nativeElement;
-    if (canvas && this.signaturePad) {
-      const ratio = Math.max(window.devicePixelRatio || 1, 1);
-      canvas.width = canvas.offsetWidth * ratio;
-      canvas.height = canvas.offsetHeight * ratio;
-      canvas.getContext('2d')?.scale(ratio, ratio);
-      this.signaturePad.clear(); // Warning: this clears drawing on resize
-    }
-  }
-
-  setDrawingColor(color: string) {
-    this.drawingColor = color;
-    if (this.signaturePad) {
-      this.signaturePad.penColor = color;
-    }
-  }
-
-  setPenWidth(width: number) {
-    this.penWidth = width;
-    if (this.signaturePad) {
-      this.signaturePad.minWidth = width;
-      this.signaturePad.maxWidth = width + 1.5;
-    }
-  }
-
-  // Image Upload
-  triggerImageUpload() {
-    document.getElementById('sig-image-upload')?.click();
-  }
-
-  onImageSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.selectedImage = e.target?.result as string;
-        this.updatePreview();
-      };
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
-
-  // Generator
-  updatePreview() {
-    const config: SignatureConfig = {
-      layout: this.sigLayout,
-      fontSize: this.sigFontSize,
-      infoLines: [...this.infoLines],
-      visualType: this.activeTab === 'image' ? 'image' : (this.activeTab === 'certName' ? 'text' : 'drawing'),
-      visualContent: this.getVisualContent()
-    };
-    const html = this.sigGen.generate(config);
-    this.previewHtml = this.sanitizer.bypassSecurityTrustHtml(html);
-    this.cdr.detectChanges();
-  }
-
-  getVisualContent(): string {
-    if (this.activeTab === 'certName') return this.certName || 'Your Name';
-    if (this.activeTab === 'image') return this.selectedImage || '';
-    if (this.activeTab === 'drawing') return this.signaturePad?.toDataURL() || '';
-    return '';
-  }
-
-  saveSignature() {
-    if (!this.pdfComponent) return;
-    const control = this.pdfComponent.getControl();
-    if (!control) return;
-
-    // Generate final HTML
-    const config: SignatureConfig = {
-      layout: this.sigLayout,
-      fontSize: this.sigFontSize,
-      infoLines: [...this.infoLines],
-      visualType: this.activeTab === 'image' ? 'image' : (this.activeTab === 'certName' ? 'text' : 'drawing'),
-      visualContent: this.getVisualContent()
-    };
-    const finalHtml = this.sigGen.generate(config);
-
-    if (this.isGenericMode) {
-      this.newField.content = finalHtml;
-      this.closeModal();
-      return;
-    }
-
-    // Add Field
-    const fieldId = `field-${Date.now()}`;
-    const field = {
-      id: fieldId,
-      pageIndex: 0, // Default to page 1 for demo
-      rect: { x: 100, y: 100, width: 120, height: 80 },
-      type: 'signature', // IMPORTANT: Use signature type
-      content: finalHtml,
-      draggable: true,
-      resizable: true,
-      deletable: true,
-      style: {
-        border: '1px solid #007bff',
-        backgroundColor: 'rgba(0, 123, 255, 0.05)',
-      }
-    };
-
-    control.addField(field as any).catch((err: Error) => alert(err.message));
-    this.closeModal();
+  onClearSignatureContent() {
+    this.newField.content = '';
   }
 
   // Zoom handlers  

@@ -1,0 +1,131 @@
+<div class="modal-overlay" *ngIf="isOpen">
+    <div class="modal-content sig-modal">
+        <div class="sig-modal-header">
+            <h3>Signature Configuration</h3>
+            <button class="close-btn" (click)="onClose()">×</button>
+        </div>
+
+        <div class="sig-modal-body">
+            <div class="sig-modal-content">
+                <!-- Left Panel -->
+                <div class="sig-left-panel">
+                    <!-- Tabs -->
+                    <div class="sig-tabs">
+                        <div class="sig-tab" [class.active]="activeTab === 'drawing'" (click)="switchTab('drawing')">
+                            Draw</div>
+                        <div class="sig-tab" [class.active]="activeTab === 'certName'" (click)="switchTab('certName')">
+                            Name</div>
+                        <div class="sig-tab" [class.active]="activeTab === 'image'" (click)="switchTab('image')">Image
+                        </div>
+                    </div>
+                    <!-- Drawing Tab -->
+                    <div class="tab-content" [class.hidden]="activeTab !== 'drawing'">
+                        <div class="signature-pad-container">
+                            <canvas #signatureCanvas class="signature-pad"></canvas>
+                        </div>
+
+                        <div class="sig-controls">
+                            <div class="control-row">
+                                <button class="color-btn" style="background:#2563eb"
+                                    [class.active]="drawingColor === '#2563eb'"
+                                    (click)="setDrawingColor('#2563eb')"></button>
+                                <button class="color-btn" style="background:#000000"
+                                    [class.active]="drawingColor === '#000000'"
+                                    (click)="setDrawingColor('#000000')"></button>
+                                <button class="color-btn" style="background:#dc2626"
+                                    [class.active]="drawingColor === '#dc2626'"
+                                    (click)="setDrawingColor('#dc2626')"></button>
+                            </div>
+                            <div class="control-row">
+                                <button class="pen-btn" [class.active]="penWidth === 1" (click)="setPenWidth(1)"
+                                    style="width:24px; height:24px; display:flex; align-items:center; justify-content:center;">
+                                    <div style="width:4px; height:4px; background:white; border-radius:50%;"></div>
+                                </button>
+                                <button class="pen-btn" [class.active]="penWidth === 3" (click)="setPenWidth(3)"
+                                    style="width:28px; height:28px; display:flex; align-items:center; justify-content:center;">
+                                    <div style="width:8px; height:8px; background:white; border-radius:50%;"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Name Tab -->
+                    <div class="tab-content" [class.hidden]="activeTab !== 'certName'">
+                        <div class="certname-input-container">
+                            <input type="text" class="certname-input" placeholder="Enter your name"
+                                [(ngModel)]="certName" (input)="updatePreview()">
+                        </div>
+                    </div>
+
+                    <!-- Image Tab -->
+                    <div class="tab-content" [class.hidden]="activeTab !== 'image'">
+                        <div class="image-upload-container" (click)="triggerImageUpload()">
+                            <input type="file" id="sig-image-upload-comp" hidden accept="image/*"
+                                (change)="onImageSelected($event)">
+                            <div class="image-preview" *ngIf="selectedImage; else uploadPlaceholder">
+                                <img [src]="selectedImage" style="max-width:100%; max-height:100%; object-fit:contain;">
+                            </div>
+                            <ng-template #uploadPlaceholder>
+                                <div class="upload-placeholder">
+                                    <div class="upload-icon">☁️</div>
+                                    <div>Click to upload</div>
+                                    <div style="font-size:12px; margin-top:4px;">(PNG, JPG, SVG)</div>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+
+                    <!-- Layout Options -->
+                    <div class="option-group" style="margin-top: 20px;">
+                        <div class="option-label">Layout</div>
+                        <div class="toggle-group">
+                            <button class="toggle-btn" [class.active]="sigLayout === 'horizontal'"
+                                (click)="sigLayout = 'horizontal'; updatePreview()">Horizontal</button>
+                            <button class="toggle-btn" [class.active]="sigLayout === 'vertical'"
+                                (click)="sigLayout = 'vertical'; updatePreview()">Vertical</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel -->
+                <div class="sig-right-panel">
+
+                    <!-- Information Lines -->
+                    <div class="option-group">
+                        <div class="option-label">Display Content</div>
+                        <div class="info-lines-list">
+                            <div *ngFor="let line of infoLines; let i = index; trackBy: trackByIndex"
+                                class="info-line-item">
+                                <input type="text" class="info-line-input" [value]="line"
+                                    (input)="updateInfoLine(i, $event)">
+                                <button class="remove-line-btn" (click)="removeInfoLine(i)">×</button>
+                            </div>
+                            <button class="add-line-btn" (click)="addInfoLine()">+ Add Line</button>
+                        </div>
+                    </div>
+
+                    <!-- Font Size -->
+                    <div class="option-group">
+                        <div class="option-label">Font Size</div>
+                        <input type="range" min="3" max="9" class="slider" [(ngModel)]="sigFontSize"
+                            (input)="updatePreview()">
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="option-group">
+                        <div class="option-label">Preview</div>
+                        <div class="sig-preview">
+                            <app-signature-preview [config]="previewConfig"></app-signature-preview>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-secondary" (click)="onClose()">Cancel</button>
+            <button class="sig-confirm-btn" (click)="onSave()">Confirm</button>
+        </div>
+    </div>
+</div>

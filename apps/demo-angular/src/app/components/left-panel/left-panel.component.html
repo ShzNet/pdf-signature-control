@@ -1,0 +1,91 @@
+<aside style="width: 100%; height: 100%;">
+    <div class="panel-title">Signature</div>
+    <button class="btn-primary" (click)="onSetupSignature()" style="margin-bottom: 20px;">
+        + Add Signature Field
+    </button>
+
+    <div class="panel-title">Generic Field</div>
+    <div class="form-container" style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
+        <div class="form-group">
+            <label>Page</label>
+            <input type="number" [(ngModel)]="newField.page" min="1" style="width: 100%;">
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 5px;">
+            <div class="form-group" style="flex: 1;">
+                <label>X (pt)</label>
+                <input type="number" [(ngModel)]="newField.x" style="width: 100%;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Y (pt)</label>
+                <input type="number" [(ngModel)]="newField.y" style="width: 100%;">
+            </div>
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 5px;">
+            <div class="form-group" style="flex: 1;">
+                <label>Width</label>
+                <input type="number" [(ngModel)]="newField.width" style="width: 100%;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Height</label>
+                <input type="number" [(ngModel)]="newField.height" style="width: 100%;">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Type</label>
+            <select [(ngModel)]="newField.type" (ngModelChange)="onTypeChange($event)" style="width: 100%;">
+                <option value="text">Text</option>
+                <option value="signature">Signature Widget</option>
+                <option value="image">Image (Upload)</option>
+            </select>
+        </div>
+
+        <!-- Text Content -->
+        <div class="form-group" *ngIf="newField.type === 'text'">
+            <label>Content</label>
+            <input type="text" [(ngModel)]="newField.content" style="width: 100%;">
+        </div>
+
+        <!-- Image Upload -->
+        <div class="form-group" *ngIf="newField.type === 'image'">
+            <label>Upload Image</label>
+            <input type="file" accept="image/*" (change)="onGenericImageSelected($event)">
+            <div *ngIf="newField.content && newField.content !== 'Signature Placeholder'"
+                style="margin-top: 5px; max-height: 50px; overflow: hidden; border: 1px solid #ddd;">
+                <img [src]="newField.content" style="max-height: 50px;">
+            </div>
+        </div>
+
+        <!-- Signature Config -->
+        <div class="form-group" *ngIf="newField.type === 'signature'">
+            <label>Signature Configuration</label>
+            <div *ngIf="!newField.content || newField.content === 'Signature Placeholder'">
+                <button class="btn-secondary" style="width: 100%; margin-bottom: 5px;" (click)="onSetupSignature()">
+                    Setup Signature
+                </button>
+            </div>
+            <div *ngIf="newField.content && newField.content !== 'Signature Placeholder'"
+                style="border: 1px solid #dee2e6; padding: 5px; border-radius: 4px; background: white;">
+                <div
+                    style="font-size: 11px; margin-bottom: 5px; overflow: hidden; width: 100%; aspect-ratio: 3 / 2; border: 1px dotted #eee; display: flex; align-items: center; justify-content: center;">
+                    <iframe [srcdoc]="sanitizer.bypassSecurityTrustHtml(newField.content)"
+                        style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
+                </div>
+                <button class="btn-secondary" style="width: 100%; font-size: 11px; padding: 4px;"
+                    (click)="onClearSignature()">
+                    Reset / Clear
+                </button>
+            </div>
+        </div>
+
+        <div class="flags-row" style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <label><input type="checkbox" [(ngModel)]="newField.draggable"> Moveable</label>
+            <label><input type="checkbox" [(ngModel)]="newField.resizable"> Resizable</label>
+            <label><input type="checkbox" [(ngModel)]="newField.deletable"> Deletable</label>
+        </div>
+
+        <button class="btn-secondary" (click)="onAdd()" style="width: 100%;">Add Generic Field</button>
+    </div>
+</aside>

@@ -35,14 +35,7 @@
     overflow-y: auto;
 }
 
-.panel-title {
-    font-size: 14px;
-    text-transform: uppercase;
-    color: #6c757d;
-    font-weight: 600;
-    margin-bottom: 15px;
-    letter-spacing: 0.5px;
-}
+
 
 .thumbnail-list {
     display: flex;
@@ -100,36 +93,9 @@
     margin: 0 8px;
 }
 
-button {
-    padding: 6px 12px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    background: white;
-    color: #495057;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.2s;
-}
 
-button:hover {
-    background: #f8f9fa;
-    border-color: #adb5bd;
-}
 
-select {
-    padding: 6px 10px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    background: white;
-    font-size: 13px;
-    color: #495057;
-    cursor: pointer;
-}
 
-select:focus {
-    outline: none;
-    border-color: #80bdff;
-}
 
 /* PDF Viewer Container */
 .pdf-container {
@@ -157,46 +123,9 @@ select:focus {
     overflow-y: auto;
 }
 
-.form-group {
-    margin-bottom: 15px;
-}
 
-label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #495057;
-}
 
-input[type="text"],
-input[type="number"] {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-size: 13px;
-    box-sizing: border-box;
-}
 
-.action-buttons {
-    padding: 20px;
-    border-top: 1px solid #e9ecef;
-    background: #f8f9fa;
-}
-
-.btn-primary {
-    width: 100%;
-    background: #0d6efd;
-    color: white;
-    border: none;
-    padding: 10px;
-    font-weight: 500;
-}
-
-.btn-primary:hover {
-    background: #0b5ed7;
-}
 
 /* Responsive Styles */
 @media (max-width: 1024px) {
