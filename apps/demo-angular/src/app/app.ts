@@ -1,5 +1,5 @@
 
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, NgZone, ChangeDetectorRef } from '@angular/core';
 import { PdfSignAngularComponent } from '@shz/pdf-sign-angular';
 import { PdfSignControl, PdfSignControlOptions, ViewMode } from '@shz/pdf-sign-control';
 import { CommonModule } from '@angular/common';
@@ -19,7 +19,7 @@ export class App {
   @ViewChild(PdfSignAngularComponent) pdfComponent!: PdfSignAngularComponent;
   @ViewChild('signatureCanvas') signatureCanvas!: ElementRef<HTMLCanvasElement>;
 
-  constructor(private sanitizer: DomSanitizer) { }
+  constructor(public sanitizer: DomSanitizer, private zone: NgZone, private cdr: ChangeDetectorRef) { }
 
 
   pdfUrl = 'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf';
@@ -39,13 +39,14 @@ export class App {
 
   // Signature Modal State
   isModalOpen = false;
+  isGenericMode = false;
   activeTab: 'drawing' | 'certName' | 'image' = 'drawing';
   signaturePad?: SignaturePad;
 
   // Config
   sigLayout: 'horizontal' | 'vertical' = 'horizontal';
   sigFontSize = 5;
-  infoLines: string[] = ['Ký số bởi: Trần Văn Chiến', 'Thời gian:'];
+  infoLines: string[] = ['Signed by: Alice', 'Date:'];
 
   // Generic Field Form State
   newField = {
@@ -60,6 +61,27 @@ export class App {
     resizable: true,
     deletable: true
   };
+
+  onTypeChange(type: string) {
+    if (type === 'signature') {
+      this.newField.content = '';
+    } else if (type === 'text') {
+      this.newField.content = 'Text Field';
+    } else {
+      this.newField.content = '';
+    }
+  }
+
+  onGenericImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.newField.content = e.target?.result as string;
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
 
   handleAddField() {
     if (!this.pdfComponent) return;
@@ -104,6 +126,18 @@ export class App {
     console.log('PDF Control ready:', control);
   }
 
+  prevPage() {
+    this.pdfComponent?.getControl()?.previousPage();
+  }
+
+  nextPage() {
+    this.pdfComponent?.getControl()?.nextPage();
+  }
+
+  onError(error: any) {
+    console.error('PDF Error:', error);
+  }
+
   onPageChange(data: { page: number; total: number }) {
     this.pageInfo = `${data.page} / ${data.total}`;
   }
@@ -126,7 +160,8 @@ export class App {
 
   // === Modal Logic ===
 
-  openModal() {
+  openModal(genericMode = false) {
+    this.isGenericMode = genericMode;
     this.isModalOpen = true;
     this.updatePreview();
 
@@ -180,7 +215,9 @@ export class App {
         maxWidth: this.penWidth + 1.5
       });
 
-      this.signaturePad.addEventListener('endStroke', () => this.updatePreview());
+      this.signaturePad.addEventListener('endStroke', () => {
+        this.zone.run(() => this.updatePreview());
+      });
       this.resizeCanvas();
     }
   }
@@ -239,10 +276,11 @@ export class App {
     };
     const html = this.sigGen.generate(config);
     this.previewHtml = this.sanitizer.bypassSecurityTrustHtml(html);
+    this.cdr.detectChanges();
   }
 
   getVisualContent(): string {
-    if (this.activeTab === 'certName') return this.certName || 'Tên của bạn';
+    if (this.activeTab === 'certName') return this.certName || 'Your Name';
     if (this.activeTab === 'image') return this.selectedImage || '';
     if (this.activeTab === 'drawing') return this.signaturePad?.toDataURL() || '';
     return '';
@@ -262,6 +300,12 @@ export class App {
       visualContent: this.getVisualContent()
     };
     const finalHtml = this.sigGen.generate(config);
+
+    if (this.isGenericMode) {
+      this.newField.content = finalHtml;
+      this.closeModal();
+      return;
+    }
 
     // Add Field
     const fieldId = `field-${Date.now()}`;

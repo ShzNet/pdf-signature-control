@@ -48,7 +48,7 @@ export function App() {
   // Signature Config
   const [sigLayout, setSigLayout] = useState<'horizontal' | 'vertical'>('horizontal');
   const [sigFontSize, setSigFontSize] = useState(5);
-  const [infoLines, setInfoLines] = useState<string[]>(['Ký số bởi: Trần Văn Chiến', 'Thời gian:']);
+  const [infoLines, setInfoLines] = useState<string[]>(['Signed by: Alice', 'Date:']);
   const [certName, setCertName] = useState('');
   const [drawingColor, setDrawingColor] = useState('#2563eb');
   const [penWidth, setPenWidth] = useState(1);
@@ -130,7 +130,7 @@ export function App() {
   };
 
   const getVisualContent = (): string => {
-    if (activeTab === 'certName') return certName || 'Tên của bạn';
+    if (activeTab === 'certName') return certName || 'Your Name';
     if (activeTab === 'image') return selectedImage || '';
     if (activeTab === 'drawing') return sigPadRef.current?.toDataURL() || '';
     return '';
@@ -372,6 +372,24 @@ export function App() {
                       /> Resize
                     </label>
                   </div>
+
+                  {/* Field Details */}
+                  <div style={{ marginTop: '5px', color: '#666', fontSize: '10px' }}>
+                    <div>x: {Math.round(field.rect.x)}, y: {Math.round(field.rect.y)}</div>
+                    <div>w: {Math.round(field.rect.width)}, h: {Math.round(field.rect.height)}</div>
+                  </div>
+
+                  {/* Live Preview */}
+                  {(field.type === 'signature' || field.type === 'html') && field.content && (
+                    <div style={{ marginTop: '5px', border: '1px solid #eee', width: '100%', aspectRatio: '3 / 2', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      <iframe srcDoc={field.content} style={{ width: '100%', height: '100%', border: 'none', pointerEvents: 'none', transform: 'scale(0.8)', transformOrigin: 'center' }} title="Preview"></iframe>
+                    </div>
+                  )}
+                  {field.type === 'image' && field.content && (
+                    <div style={{ marginTop: '5px', maxHeight: '60px', overflow: 'hidden', border: '1px solid #eee', display: 'flex', justifyContent: 'center' }}>
+                      <img src={field.content} style={{ maxHeight: '100%', maxWidth: '100%' }} />
+                    </div>
+                  )}
                 </div>
               ))
             )}
@@ -384,7 +402,7 @@ export function App() {
         <div className="modal-overlay">
           <div className="modal-content sig-modal">
             <div className="sig-modal-header">
-              <h3>Cấu hình chữ ký</h3>
+              <h3>Signature Configuration</h3>
               <button className="close-btn" onClick={() => setIsModalOpen(false)}>×</button>
             </div>
 
@@ -392,9 +410,9 @@ export function App() {
               <div className="sig-modal-content">
                 <div className="sig-left-panel">
                   <div className="sig-tabs">
-                    <div className={`sig-tab ${activeTab === 'drawing' ? 'active' : ''}`} onClick={() => setActiveTab('drawing')}>Vẽ tay</div>
-                    <div className={`sig-tab ${activeTab === 'certName' ? 'active' : ''}`} onClick={() => setActiveTab('certName')}>Tên</div>
-                    <div className={`sig-tab ${activeTab === 'image' ? 'active' : ''}`} onClick={() => setActiveTab('image')}>Tải ảnh</div>
+                    <div className={`sig-tab ${activeTab === 'drawing' ? 'active' : ''}`} onClick={() => setActiveTab('drawing')}>Draw</div>
+                    <div className={`sig-tab ${activeTab === 'certName' ? 'active' : ''}`} onClick={() => setActiveTab('certName')}>Name</div>
+                    <div className={`sig-tab ${activeTab === 'image' ? 'active' : ''}`} onClick={() => setActiveTab('image')}>Image</div>
                   </div>
 
                   {/* Drawing */}
@@ -409,7 +427,7 @@ export function App() {
                         <button className={`color-btn ${drawingColor === '#dc2626' ? 'active' : ''}`} style={{ background: '#dc2626' }} onClick={() => setDrawingColor('#dc2626')}></button>
                       </div>
                       <div className="control-row">
-                        <span className="control-label" style={{ marginRight: '10px', fontSize: '13px', color: '#6b7280' }}>Nét bút</span>
+                        <span className="control-label" style={{ marginRight: '10px', fontSize: '13px', color: '#6b7280' }}>Stroke</span>
                         <button className={`pen-btn ${penWidth === 1 ? 'active' : ''}`} onClick={() => setPenWidth(1)} style={{ width: '8px', height: '8px' }}></button>
                         <button className={`pen-btn ${penWidth === 2.5 ? 'active' : ''}`} onClick={() => setPenWidth(2.5)} style={{ width: '12px', height: '12px', marginLeft: '10px' }}></button>
                       </div>
@@ -419,7 +437,7 @@ export function App() {
                   {/* Name */}
                   <div className={`tab-content ${activeTab !== 'certName' ? 'hidden' : ''}`}>
                     <div className="certname-input-container">
-                      <input type="text" className="certname-input" placeholder="Nhập tên của bạn" value={certName} onChange={e => setCertName(e.target.value)} />
+                      <input type="text" className="certname-input" placeholder="Enter your name" value={certName} onChange={e => setCertName(e.target.value)} />
                     </div>
                   </div>
 
@@ -432,24 +450,24 @@ export function App() {
                       ) : (
                         <div className="upload-placeholder">
                           <div className="upload-icon">☁️</div>
-                          <div>Click để chọn ảnh</div>
+                          <div>Click to upload</div>
                         </div>
                       )}
                     </div>
                   </div>
 
                   <div className="option-group" style={{ marginTop: '20px' }}>
-                    <div className="option-label">Bố cục</div>
+                    <div className="option-label">Layout</div>
                     <div className="toggle-group">
-                      <button className={`toggle-btn ${sigLayout === 'horizontal' ? 'active' : ''}`} onClick={() => setSigLayout('horizontal')}>Ngang</button>
-                      <button className={`toggle-btn ${sigLayout === 'vertical' ? 'active' : ''}`} onClick={() => setSigLayout('vertical')}>Dọc</button>
+                      <button className={`toggle-btn ${sigLayout === 'horizontal' ? 'active' : ''}`} onClick={() => setSigLayout('horizontal')}>Horizontal</button>
+                      <button className={`toggle-btn ${sigLayout === 'vertical' ? 'active' : ''}`} onClick={() => setSigLayout('vertical')}>Vertical</button>
                     </div>
                   </div>
                 </div>
 
                 <div className="sig-right-panel">
                   <div className="option-group">
-                    <div className="option-label">Nội dung hiển thị</div>
+                    <div className="option-label">Display Content</div>
                     <div className="info-lines-list">
                       {infoLines.map((line, i) => (
                         <div key={i} className="info-line-item">
@@ -461,17 +479,17 @@ export function App() {
                           <button className="remove-line-btn" onClick={() => setInfoLines(infoLines.filter((_, idx) => idx !== i))}>×</button>
                         </div>
                       ))}
-                      <button className="add-line-btn" onClick={() => setInfoLines([...infoLines, ''])}>+ Thêm dòng</button>
+                      <button className="add-line-btn" onClick={() => setInfoLines([...infoLines, ''])}>+ Add Line</button>
                     </div>
                   </div>
 
                   <div className="option-group">
-                    <div className="option-label">Cỡ chữ</div>
+                    <div className="option-label">Font Size</div>
                     <input type="range" min="3" max="9" className="slider" value={sigFontSize} onChange={e => setSigFontSize(parseInt(e.target.value))} />
                   </div>
 
                   <div className="option-group">
-                    <div className="option-label">Xem trước</div>
+                    <div className="option-label">Preview</div>
                     <div className="sig-preview">
                       <iframe srcDoc={previewHtml} title="Signature Preview" style={{ width: '100%', height: '100%', border: 'none' }}></iframe>
                     </div>
@@ -481,8 +499,8 @@ export function App() {
             </div>
 
             <div className="modal-actions">
-              <button className="btn-secondary" onClick={() => setIsModalOpen(false)}>Hủy bỏ</button>
-              <button className="sig-confirm-btn" onClick={handleSaveSignature}>Đồng ý</button>
+              <button className="btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
+              <button className="sig-confirm-btn" onClick={handleSaveSignature}>Confirm</button>
             </div>
           </div>
         </div>

@@ -75,7 +75,6 @@ export class SignatureGenerator {
       height: 100%;
       display: flex;
       flex-direction: ${isHorizontal ? 'row' : 'column'};
-      flex-direction: ${isHorizontal ? 'row' : 'column'};
       background: transparent;
     }
     .section-1 {

@@ -11,23 +11,78 @@
   <div class="panel-title">Generic Field</div>
   <div class="form-container" style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
     <!-- Keep generic add field for testing -->
+    <div class="form-group">
+      <label>Page</label>
+      <input type="number" [(ngModel)]="newField.page" min="1" style="width: 100%;">
+    </div>
+
     <div class="form-row" style="display: flex; gap: 5px;">
       <div class="form-group" style="flex: 1;">
-        <label>Page</label>
-        <input type="number" [(ngModel)]="newField.page" min="1" style="width: 100%;">
+        <label>X (pt)</label>
+        <input type="number" [(ngModel)]="newField.x" style="width: 100%;">
       </div>
       <div class="form-group" style="flex: 1;">
-        <label>Type</label>
-        <select [(ngModel)]="newField.type" style="width: 100%;">
-          <option value="text">Text</option>
-          <option value="html">HTML</option>
-          <option value="image">Image</option>
-        </select>
+        <label>Y (pt)</label>
+        <input type="number" [(ngModel)]="newField.y" style="width: 100%;">
       </div>
     </div>
+
+    <div class="form-row" style="display: flex; gap: 5px;">
+      <div class="form-group" style="flex: 1;">
+        <label>Width</label>
+        <input type="number" [(ngModel)]="newField.width" style="width: 100%;">
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>Height</label>
+        <input type="number" [(ngModel)]="newField.height" style="width: 100%;">
+      </div>
+    </div>
+
     <div class="form-group">
+      <label>Type</label>
+      <select [(ngModel)]="newField.type" (ngModelChange)="onTypeChange($event)" style="width: 100%;">
+        <option value="text">Text</option>
+        <option value="signature">Signature Widget</option>
+        <option value="image">Image (Upload)</option>
+      </select>
+    </div>
+
+    <!-- Text Content -->
+    <div class="form-group" *ngIf="newField.type === 'text'">
       <label>Content</label>
       <input type="text" [(ngModel)]="newField.content" style="width: 100%;">
+    </div>
+
+    <!-- Image Upload -->
+    <div class="form-group" *ngIf="newField.type === 'image'">
+      <label>Upload Image</label>
+      <input type="file" accept="image/*" (change)="onGenericImageSelected($event)">
+      <div *ngIf="newField.content && newField.content !== 'Signature Placeholder'"
+        style="margin-top: 5px; max-height: 50px; overflow: hidden; border: 1px solid #ddd;">
+        <img [src]="newField.content" style="max-height: 50px;">
+      </div>
+    </div>
+
+    <!-- Signature Config -->
+    <div class="form-group" *ngIf="newField.type === 'signature'">
+      <label>Signature Configuration</label>
+      <div *ngIf="!newField.content || newField.content === 'Signature Placeholder'">
+        <button class="btn-secondary" style="width: 100%; margin-bottom: 5px;" (click)="openModal(true)">
+          Setup Signature
+        </button>
+      </div>
+      <div *ngIf="newField.content && newField.content !== 'Signature Placeholder'"
+        style="border: 1px solid #dee2e6; padding: 5px; border-radius: 4px; background: white;">
+        <div
+          style="font-size: 11px; margin-bottom: 5px; overflow: hidden; width: 100%; aspect-ratio: 3 / 2; border: 1px dotted #eee; display: flex; align-items: center; justify-content: center;">
+          <iframe [srcdoc]="sanitizer.bypassSecurityTrustHtml(newField.content)"
+            style="width: 100%; height: 100%; border: none; pointer-events: none;"></iframe>
+        </div>
+        <button class="btn-secondary" style="width: 100%; font-size: 11px; padding: 4px;"
+          (click)="newField.content = ''">
+          Reset / Clear
+        </button>
+      </div>
     </div>
 
     <div class="flags-row" style="display: flex; flex-wrap: wrap; gap: 10px;">
@@ -101,6 +156,24 @@
             <input type="checkbox" [(ngModel)]="field.resizable" (ngModelChange)="refreshFields()"> Resize
           </label>
         </div>
+
+        <!-- Field Details -->
+        <div style="margin-top: 5px; color: #666; font-size: 10px;">
+          <div>x: {{ field.rect.x | number:'1.0-0' }}, y: {{ field.rect.y | number:'1.0-0' }}</div>
+          <div>w: {{ field.rect.width | number:'1.0-0' }}, h: {{ field.rect.height | number:'1.0-0' }}</div>
+        </div>
+
+        <!-- Live Preview -->
+        <div *ngIf="(field.type === 'signature' || field.type === 'html') && field.content"
+          style="margin-top: 5px; border: 1px solid #eee; width: 100%; aspect-ratio: 3/2; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+          <iframe [srcdoc]="sanitizer.bypassSecurityTrustHtml(field.content)"
+            style="width: 100%; height: 100%; border: none; pointer-events: none; transform: scale(0.8); transform-origin: center;"></iframe>
+        </div>
+
+        <div *ngIf="field.type === 'image' && field.content"
+          style="margin-top: 5px; max-height: 60px; overflow: hidden; border: 1px solid #eee; display: flex; justify-content: center;">
+          <img [src]="field.content" style="max-height: 100%; max-width: 100%;">
+        </div>
       </div>
     </div>
   </div>
@@ -110,21 +183,20 @@
 <div class="modal-overlay" *ngIf="isModalOpen">
   <div class="modal-content sig-modal">
     <div class="sig-modal-header">
-      <h3>Cấu hình chữ ký</h3>
+      <h3>Signature Configuration</h3>
       <button class="close-btn" (click)="closeModal()">×</button>
     </div>
 
     <div class="sig-modal-body">
-      <!-- Tabs -->
-      <div class="sig-tabs">
-        <div class="sig-tab" [class.active]="activeTab === 'drawing'" (click)="switchTab('drawing')">Vẽ tay</div>
-        <div class="sig-tab" [class.active]="activeTab === 'certName'" (click)="switchTab('certName')">Tên</div>
-        <div class="sig-tab" [class.active]="activeTab === 'image'" (click)="switchTab('image')">Tải ảnh</div>
-      </div>
-
       <div class="sig-modal-content">
         <!-- Left Panel -->
         <div class="sig-left-panel">
+          <!-- Tabs -->
+          <div class="sig-tabs">
+            <div class="sig-tab" [class.active]="activeTab === 'drawing'" (click)="switchTab('drawing')">Draw</div>
+            <div class="sig-tab" [class.active]="activeTab === 'certName'" (click)="switchTab('certName')">Name</div>
+            <div class="sig-tab" [class.active]="activeTab === 'image'" (click)="switchTab('image')">Image</div>
+          </div>
           <!-- Drawing Tab -->
           <div class="tab-content" [class.hidden]="activeTab !== 'drawing'">
             <div class="signature-pad-container">
@@ -156,7 +228,7 @@
           <!-- Name Tab -->
           <div class="tab-content" [class.hidden]="activeTab !== 'certName'">
             <div class="certname-input-container">
-              <input type="text" class="certname-input" placeholder="Nhập tên của bạn" [(ngModel)]="certName"
+              <input type="text" class="certname-input" placeholder="Enter your name" [(ngModel)]="certName"
                 (input)="updatePreview()">
             </div>
           </div>
@@ -171,7 +243,7 @@
               <ng-template #uploadPlaceholder>
                 <div class="upload-placeholder">
                   <div class="upload-icon">☁️</div>
-                  <div>Click để chọn ảnh</div>
+                  <div>Click to upload</div>
                   <div style="font-size:12px; margin-top:4px;">(PNG, JPG, SVG)</div>
                 </div>
               </ng-template>
@@ -180,12 +252,12 @@
 
           <!-- Layout Options -->
           <div class="option-group" style="margin-top: 20px;">
-            <div class="option-label">Bố cục</div>
+            <div class="option-label">Layout</div>
             <div class="toggle-group">
               <button class="toggle-btn" [class.active]="sigLayout === 'horizontal'"
-                (click)="sigLayout = 'horizontal'; updatePreview()">Ngang</button>
+                (click)="sigLayout = 'horizontal'; updatePreview()">Horizontal</button>
               <button class="toggle-btn" [class.active]="sigLayout === 'vertical'"
-                (click)="sigLayout = 'vertical'; updatePreview()">Dọc</button>
+                (click)="sigLayout = 'vertical'; updatePreview()">Vertical</button>
             </div>
           </div>
         </div>
@@ -195,37 +267,38 @@
 
           <!-- Information Lines -->
           <div class="option-group">
-            <div class="option-label">Nội dung hiển thị</div>
+            <div class="option-label">Display Content</div>
             <div class="info-lines-list">
               <div *ngFor="let line of infoLines; let i = index; trackBy: trackByIndex" class="info-line-item">
                 <input type="text" class="info-line-input" [value]="line" (input)="updateInfoLine(i, $event)">
                 <button class="remove-line-btn" (click)="removeInfoLine(i)">×</button>
               </div>
-              <button class="add-line-btn" (click)="addInfoLine()">+ Thêm dòng</button>
+              <button class="add-line-btn" (click)="addInfoLine()">+ Add Line</button>
             </div>
           </div>
 
           <!-- Font Size -->
           <div class="option-group">
-            <div class="option-label">Cỡ chữ</div>
+            <div class="option-label">Font Size</div>
             <input type="range" min="3" max="9" class="slider" [(ngModel)]="sigFontSize" (input)="updatePreview()">
           </div>
 
           <!-- Preview -->
           <div class="option-group">
-            <div class="option-label">Xem trước</div>
-            <div class="sig-preview">
-              <iframe [srcdoc]="previewHtml" style="width:100%; height:100%; border:none;"></iframe>
+            <div class="option-group">
+              <div class="option-label">Preview</div>
+              <div class="sig-preview">
+                <iframe [srcdoc]="previewHtml" style="width:100%; height:100%; border:none;"></iframe>
+              </div>
             </div>
-          </div>
 
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="modal-actions">
-      <button class="btn-secondary" (click)="closeModal()">Hủy bỏ</button>
-      <button class="sig-confirm-btn" (click)="saveSignature()">Đồng ý</button>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="closeModal()">Cancel</button>
+        <button class="sig-confirm-btn" (click)="saveSignature()">Confirm</button>
+      </div>
     </div>
   </div>
-</div>

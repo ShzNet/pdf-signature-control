@@ -69,7 +69,7 @@ if (app) {
         <!-- Dynamic Content Inputs -->
         <div id="input-text-container" class="form-group">
             <label>Content</label>
-            <textarea id="field-content-text" rows="3" style="width: 100%;">Signature Placeholder</textarea>
+            <textarea id="field-content-text" rows="3" style="width: 100%;">Text Field</textarea>
         </div>
         
         <div id="input-image-container" class="form-group hidden">
@@ -152,7 +152,7 @@ if (app) {
       <div class="modal-content sig-modal">
           <!-- Header -->
           <div class="sig-modal-header">
-              <h3>Thêm chữ ký</h3>
+              <h3>Add Signature</h3>
               <button id="close-modal-btn" class="close-btn">×</button>
           </div>
           
@@ -162,9 +162,9 @@ if (app) {
                   <div class="sig-left-panel">
                       <!-- Tabs -->
                       <div class="sig-tabs">
-                          <button class="sig-tab active" data-tab="drawing">Vẽ</button>
-                          <button class="sig-tab" data-tab="certName">Tên</button>
-                          <button class="sig-tab" data-tab="image">Ảnh</button>
+                          <button class="sig-tab active" data-tab="drawing">Draw</button>
+                          <button class="sig-tab" data-tab="certName">Name</button>
+                          <button class="sig-tab" data-tab="image">Image</button>
                       </div>
                       
                       <!-- Drawing Tab -->
@@ -174,13 +174,13 @@ if (app) {
                           </div>
                           <div class="sig-controls">
                               <div class="control-row">
-                                  <span class="control-label">Màu sắc</span>
+                                  <span class="control-label">Color</span>
                                   <button class="color-btn active" data-color="#2563eb" style="background:#2563eb"></button>
                                   <button class="color-btn" data-color="#1f2937" style="background:#1f2937"></button>
                                   <button class="color-btn" data-color="#dc2626" style="background:#dc2626"></button>
                               </div>
                               <div class="control-row">
-                                  <span class="control-label">Nét bút</span>
+                                  <span class="control-label">Stroke</span>
                                   <button class="pen-btn active" data-width="1" style="width:8px;height:8px"></button>
                                   <button class="pen-btn" data-width="2.5" style="width:12px;height:12px"></button>
                               </div>
@@ -190,7 +190,7 @@ if (app) {
                       <!-- CertName Tab -->
                       <div id="tab-certName" class="tab-content hidden">
                           <div class="certname-input-container">
-                              <input type="text" id="section1-certname-text" placeholder="Nhập tên chứng thư" class="certname-input">
+                              <input type="text" id="section1-certname-text" placeholder="Enter your name" class="certname-input">
                           </div>
                       </div>
                       
@@ -200,7 +200,7 @@ if (app) {
                               <div id="section1-image-preview" class="image-preview">
                                   <div class="upload-placeholder">
                                       <div class="upload-icon">📁</div>
-                                      <div>Nhấn để tải ảnh lên</div>
+                                      <div>Click to upload</div>
                                   </div>
                               </div>
                               <input type="file" id="section1-image-file" accept="image/*" style="display:none">
@@ -209,10 +209,10 @@ if (app) {
                       
                       <!-- Layout Options -->
                       <div class="option-group">
-                          <div class="option-label">Bố cục</div>
+                          <div class="option-label">Layout</div>
                           <div class="toggle-group">
-                              <button class="toggle-btn active" data-layout="horizontal">Ngang</button>
-                              <button class="toggle-btn" data-layout="vertical">Dọc</button>
+                              <button class="toggle-btn active" data-layout="horizontal">Horizontal</button>
+                              <button class="toggle-btn" data-layout="vertical">Vertical</button>
                           </div>
                       </div>
                   </div>
@@ -221,29 +221,29 @@ if (app) {
                   <div class="sig-right-panel">
                       <!-- Info Lines -->
                       <div class="option-group">
-                          <div class="option-label">Nội dung hiển thị</div>
+                          <div class="option-label">Display Content</div>
                           <div class="info-lines-list" id="info-lines-list">
                               <div class="info-line-item">
-                                  <input type="text" class="info-line-input" value="Ký số bởi: Trần Văn Chiến" placeholder="Nhập nội dung...">
-                                  <button class="remove-line-btn" title="Xóa">×</button>
+                                  <input type="text" class="info-line-input" value="Signed by: Alice" placeholder="Enter content...">
+                                  <button class="remove-line-btn" title="Delete">×</button>
                               </div>
                               <div class="info-line-item">
-                                  <input type="text" class="info-line-input" value="Thời gian:" placeholder="Nhập nội dung...">
-                                  <button class="remove-line-btn" title="Xóa">×</button>
+                                  <input type="text" class="info-line-input" value="Date:" placeholder="Enter content...">
+                                  <button class="remove-line-btn" title="Delete">×</button>
                               </div>
                           </div>
-                          <button class="add-line-btn" id="add-info-line-btn">+ Thêm dòng</button>
+                          <button class="add-line-btn" id="add-info-line-btn">+ Add Line</button>
                       </div>
                       
                       <!-- Font Size -->
                       <div class="option-group">
-                          <div class="option-label">Cỡ chữ</div>
+                          <div class="option-label">Font Size</div>
                           <input type="range" id="font-size-slider" min="3" max="9" value="5" class="slider">
                       </div>
                       
                       <!-- Preview -->
                       <div class="option-group">
-                          <div class="option-label">Xem trước</div>
+                          <div class="option-label">Preview</div>
                           <div id="modal-sig-preview" class="sig-preview">
                               <div class="preview-placeholder">Preview</div>
                           </div>
@@ -254,8 +254,8 @@ if (app) {
           
           <!-- Footer -->
           <div class="modal-actions">
-              <button class="btn-secondary" id="cancel-modal-btn">Hủy</button>
-              <button class="btn-primary sig-confirm-btn" id="save-sig-btn">Xác nhận</button>
+              <button class="btn-secondary" id="cancel-modal-btn">Cancel</button>
+              <button class="btn-primary sig-confirm-btn" id="save-sig-btn">Confirm</button>
           </div>
       </div>
   `;
@@ -714,8 +714,8 @@ if (app) {
       const newItem = document.createElement('div');
       newItem.className = 'info-line-item';
       newItem.innerHTML = `
-        <input type="text" class="info-line-input" value="" placeholder="Nhập nội dung...">
-        <button class="remove-line-btn" title="Xóa">×</button>
+        <input type="text" class="info-line-input" value="" placeholder="Enter content...">
+        <button class="remove-line-btn" title="Delete">×</button>
       `;
       container.appendChild(newItem);
 
