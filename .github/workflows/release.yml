@@ -36,7 +36,7 @@ jobs:
 
       - name: Nx Release
         run: |
-          npx nx release --yes
+          npx nx release --yes --first-release
           git push --follow-tags origin main
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
