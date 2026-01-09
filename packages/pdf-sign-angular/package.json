@@ -1,6 +1,6 @@
 {
   "name": "@shznet/pdf-sign-angular",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Angular wrapper for @shznet/pdf-sign-control",
   "license": "MIT",
   "repository": {

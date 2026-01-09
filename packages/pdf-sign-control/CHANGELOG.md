@@ -1,3 +1,13 @@
+## 0.2.1 (2026-01-09)
+
+### 🩹 Fixes
+
+- make control a direct dependency for all wrappers ([467e437](https://github.com/ShzNet/pdf-signature-control/commit/467e437))
+
+### ❤️ Thank You
+
+- Chien Tran
+
 ## 0.2.0 (2026-01-09)
 
 ### 🚀 Features
