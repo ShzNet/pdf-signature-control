@@ -1,7 +1,7 @@
 
 import { Component, ElementRef, ViewChild, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PdfSignControl, PdfSignControlOptions, ViewMode, SignatureField } from '@shz/pdf-sign-control';
+import { PdfSignControl, PdfSignControlOptions, ViewMode, SignatureField } from '@shznet/pdf-sign-control';
 
 @Component({
   selector: 'lib-pdf-sign-angular',

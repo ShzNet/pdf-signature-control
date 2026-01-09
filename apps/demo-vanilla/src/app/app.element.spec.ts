@@ -15,7 +15,7 @@ describe('AppElement', () => {
     app.connectedCallback();
 
     expect(app.querySelector('h1').innerHTML).toContain(
-      'Welcome @shz/demo-vanilla',
+      'Welcome @shznet/demo-vanilla',
     );
   });
 });

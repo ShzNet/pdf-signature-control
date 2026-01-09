@@ -20,10 +20,10 @@
     "strict": true,
     "target": "es2022",
     "customConditions": [
-      "@shz/source"
+      "@shznet/source"
     ],
     "paths": {
-      "@shz/pdf-sign-angular": [
+      "@shznet/pdf-sign-angular": [
         "packages/pdf-sign-angular/src/index.ts"
       ]
     }

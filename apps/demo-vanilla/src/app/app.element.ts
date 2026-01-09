@@ -4,7 +4,7 @@ export class AppElement extends HTMLElement {
   public static observedAttributes = [];
 
   connectedCallback() {
-    const title = '@shz/demo-vanilla';
+    const title = '@shznet/demo-vanilla';
     this.innerHTML = `
     <div class="wrapper">
       <div class="container">

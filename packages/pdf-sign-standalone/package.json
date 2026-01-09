@@ -1,5 +1,5 @@
 {
-  "name": "@shz/pdf-sign-standalone",
+  "name": "@shznet/pdf-sign-standalone",
   "version": "0.0.2",
   "type": "module",
   "main": "./dist/index.js",
@@ -8,7 +8,7 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "@shz/source": "./src/index.ts",
+      "@shznet/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
@@ -22,6 +22,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@shz/pdf-sign-control": "*"
+    "@shznet/pdf-sign-control": "*"
   }
 }

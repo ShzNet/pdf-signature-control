@@ -1,17 +1,17 @@
-# @shz/pdf-sign-react
+# @shznet/pdf-sign-react
 
-React component wrapper for `@shz/pdf-sign-control`.
+React component wrapper for `@shznet/pdf-sign-control`.
 
 ## Installation
 
 ```bash
-npm install @shz/pdf-sign-react @shz/pdf-sign-control pdfjs-dist
+npm install @shznet/pdf-sign-react @shznet/pdf-sign-control pdfjs-dist
 ```
 
 ## Usage
 
 ```tsx
-import { PdfSignReact } from '@shz/pdf-sign-react';
+import { PdfSignReact } from '@shznet/pdf-sign-react';
 
 export function App() {
   const handlePdfLoaded = () => {

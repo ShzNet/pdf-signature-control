@@ -1,5 +1,5 @@
 import React from 'react';
-import { SignatureField } from '@shz/pdf-sign-control';
+import { SignatureField } from '@shznet/pdf-sign-control';
 
 interface RightPanelProps {
     fields: SignatureField[];

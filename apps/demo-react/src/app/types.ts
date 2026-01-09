@@ -1,4 +1,4 @@
-import { SignatureFieldType } from '@shz/pdf-sign-control';
+import { SignatureFieldType } from '@shznet/pdf-sign-control';
 
 export interface NewFieldState {
     page: number;

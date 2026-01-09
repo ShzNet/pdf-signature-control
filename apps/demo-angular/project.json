@@ -1,5 +1,5 @@
 {
-  "name": "@shz/demo-angular",
+  "name": "@shznet/demo-angular",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "app",
@@ -57,10 +57,10 @@
       },
       "configurations": {
         "production": {
-          "buildTarget": "@shz/demo-angular:build:production"
+          "buildTarget": "@shznet/demo-angular:build:production"
         },
         "development": {
-          "buildTarget": "@shz/demo-angular:build:development"
+          "buildTarget": "@shznet/demo-angular:build:development"
         }
       },
       "defaultConfiguration": "development"
@@ -82,7 +82,7 @@
       "continuous": true,
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "@shz/demo-angular:build",
+        "buildTarget": "@shznet/demo-angular:build",
         "staticFilePath": "dist/apps/demo-angular/browser",
         "spa": true
       }

@@ -1,6 +1,6 @@
-import { PdfSignReact, PdfSignReactRef } from '@shz/pdf-sign-react';
+import { PdfSignReact, PdfSignReactRef } from '@shznet/pdf-sign-react';
 import { useRef, useState, useMemo, useCallback } from 'react';
-import { SignatureField } from '@shz/pdf-sign-control';
+import { SignatureField } from '@shznet/pdf-sign-control';
 import '../styles.css';
 import { NewFieldState } from './types';
 import { LeftPanel } from './components/LeftPanel';

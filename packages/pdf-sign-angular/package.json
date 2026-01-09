@@ -1,10 +1,10 @@
 {
-  "name": "@shz/pdf-sign-angular",
+  "name": "@shznet/pdf-sign-angular",
   "version": "0.0.2",
   "peerDependencies": {
     "@angular/common": "^21.0.0",
     "@angular/core": "^21.0.0",
-    "@shz/pdf-sign-control": "*"
+    "@shznet/pdf-sign-control": "*"
   },
   "publishConfig": {
     "access": "public"

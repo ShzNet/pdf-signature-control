@@ -26,7 +26,7 @@ export default defineConfig(() => ({
     },
   },
   test: {
-    name: '@shz/demo-vanilla',
+    name: '@shznet/demo-vanilla',
     watch: false,
     globals: true,
     environment: 'jsdom',

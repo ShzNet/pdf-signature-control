@@ -1,5 +1,5 @@
 import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import { PdfSignControl, PdfSignControlOptions, ViewMode, SignatureField } from '@shz/pdf-sign-control';
+import { PdfSignControl, PdfSignControlOptions, ViewMode, SignatureField } from '@shznet/pdf-sign-control';
 
 export interface PdfSignReactRef {
   /** Get the underlying PdfSignControl instance */
@@ -161,4 +161,4 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
 });
 
 // Re-export types
-export type { ViewMode } from '@shz/pdf-sign-control';
+export type { ViewMode } from '@shznet/pdf-sign-control';

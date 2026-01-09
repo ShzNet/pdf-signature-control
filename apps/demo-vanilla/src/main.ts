@@ -1,4 +1,4 @@
-import { PdfSignControl, ViewMode } from '@shz/pdf-sign-control';
+import { PdfSignControl, ViewMode } from '@shznet/pdf-sign-control';
 import './styles.css';
 import { LeftPanel, NewFieldData } from './components/LeftPanel';
 import { RightPanel } from './components/RightPanel';

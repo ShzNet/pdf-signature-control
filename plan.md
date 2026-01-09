@@ -1,4 +1,4 @@
-# @shz/pdf-sign-control - Detailed Implementation Plan
+# @shznet/pdf-sign-control - Detailed Implementation Plan
 
 ## 1. Architecture & Design
 

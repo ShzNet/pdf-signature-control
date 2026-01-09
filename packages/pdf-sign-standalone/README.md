@@ -1,4 +1,4 @@
-# @shz/pdf-sign-standalone
+# @shznet/pdf-sign-standalone
 
 A bundled version of the PDF Sign Control for usage in Vanilla JS or environments without a bundler.
 
@@ -23,4 +23,4 @@ Include the script directly or import it:
 
 ## Versioning
 
-This package follows the version of `@shz/pdf-sign-control`.
+This package follows the version of `@shznet/pdf-sign-control`.

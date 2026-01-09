@@ -1,17 +1,17 @@
-# @shz/pdf-sign-control
+# @shznet/pdf-sign-control
 
-The core engine for the `@shz/pdf-sign` ecosystem. It provides a framework-agnostic class `PdfSignControl` to render PDFs and manage interactive signature fields.
+The core engine for the `@shznet/pdf-sign` ecosystem. It provides a framework-agnostic class `PdfSignControl` to render PDFs and manage interactive signature fields.
 
 ## Installation
 
 ```bash
-npm install @shz/pdf-sign-control pdfjs-dist
+npm install @shznet/pdf-sign-control pdfjs-dist
 ```
 
 ## Usage
 
 ```typescript
-import { PdfSignControl } from '@shz/pdf-sign-control';
+import { PdfSignControl } from '@shznet/pdf-sign-control';
 
 // 1. Initialize the control
 const container = document.getElementById('pdf-wrapper');

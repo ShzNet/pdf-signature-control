@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
-import { PdfSignAngularComponent } from '@shz/pdf-sign-angular';
-import { PdfSignControl, PdfSignControlOptions, ViewMode } from '@shz/pdf-sign-control';
+import { PdfSignAngularComponent } from '@shznet/pdf-sign-angular';
+import { PdfSignControl, PdfSignControlOptions, ViewMode } from '@shznet/pdf-sign-control';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';

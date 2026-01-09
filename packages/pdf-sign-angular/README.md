@@ -1,11 +1,11 @@
-# @shz/pdf-sign-angular
+# @shznet/pdf-sign-angular
 
-Angular component wrapper for `@shz/pdf-sign-control`.
+Angular component wrapper for `@shznet/pdf-sign-control`.
 
 ## Installation
 
 ```bash
-npm install @shz/pdf-sign-angular @shz/pdf-sign-control pdfjs-dist
+npm install @shznet/pdf-sign-angular @shznet/pdf-sign-control pdfjs-dist
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ npm install @shz/pdf-sign-angular @shz/pdf-sign-control pdfjs-dist
 Import the module in your `app.module.ts`:
 
 ```typescript
-import { PdfSignAngularModule } from '@shz/pdf-sign-angular';
+import { PdfSignAngularModule } from '@shznet/pdf-sign-angular';
 
 @NgModule({
   imports: [PdfSignAngularModule],

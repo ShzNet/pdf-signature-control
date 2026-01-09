@@ -1,10 +1,10 @@
-# Task Checklist - @shz/pdf-sign-control
+# Task Checklist - @shznet/pdf-sign-control
 
 - [x] **Phase 1: Project & Demo Environment Setup** <!-- id: 0 -->
-    - [x] Create `@shz/pdf-sign-control` (Core Lib) <!-- id: 1 -->
-    - [x] Create `@shz/pdf-sign-react` (React Wrapper) <!-- id: 2 -->
-    - [x] Create `@shz/pdf-sign-angular` (Angular Wrapper) <!-- id: 4 -->
-    - [x] Create `@shz/pdf-sign-standalone` (Vanilla JS Wrapper) <!-- id: 5 -->
+    - [x] Create `@shznet/pdf-sign-control` (Core Lib) <!-- id: 1 -->
+    - [x] Create `@shznet/pdf-sign-react` (React Wrapper) <!-- id: 2 -->
+    - [x] Create `@shznet/pdf-sign-angular` (Angular Wrapper) <!-- id: 4 -->
+    - [x] Create `@shznet/pdf-sign-standalone` (Vanilla JS Wrapper) <!-- id: 5 -->
     - [x] **Setup Demos**:
         - [x] Create `apps/demo-react` and link wrapper <!-- id: 6 -->
         - [x] Create `apps/demo-angular` and link wrapper <!-- id: 8 -->

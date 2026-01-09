@@ -1,5 +1,5 @@
 /**
- * Public types for @shz/pdf-sign-control
+ * Public types for @shznet/pdf-sign-control
  */
 
 /**

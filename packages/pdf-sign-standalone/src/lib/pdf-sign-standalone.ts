@@ -1,6 +1,6 @@
-import { PdfSignControl } from '@shz/pdf-sign-control';
+import { PdfSignControl } from '@shznet/pdf-sign-control';
 
-export * from '@shz/pdf-sign-control';
+export * from '@shznet/pdf-sign-control';
 
 // Attach to window for global usage in non-module environments
 if (typeof window !== 'undefined') {

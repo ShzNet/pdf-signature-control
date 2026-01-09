@@ -1,5 +1,5 @@
 {
-  "name": "@shz/pdf-sign-react",
+  "name": "@shznet/pdf-sign-react",
   "version": "0.0.2",
   "type": "module",
   "main": "./dist/index.js",
@@ -8,7 +8,7 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "@shz/source": "./src/index.ts",
+      "@shznet/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
@@ -24,6 +24,6 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "@shz/pdf-sign-control": "*"
+    "@shznet/pdf-sign-control": "*"
   }
 }

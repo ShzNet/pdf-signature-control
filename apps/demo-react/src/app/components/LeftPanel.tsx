@@ -1,5 +1,5 @@
 import React from 'react';
-import { SignatureFieldType } from '@shz/pdf-sign-control';
+import { SignatureFieldType } from '@shznet/pdf-sign-control';
 import { NewFieldState } from '../types';
 
 interface LeftPanelProps {

@@ -1,4 +1,4 @@
-# @shz/pdf-sign
+# @shznet/pdf-sign
 
 A comprehensive PDF signing and annotation SDK built with **Nx**. This repository contains the core logic and framework-specific wrappers to integrate PDF signature capabilities into any web application.
 
@@ -8,10 +8,10 @@ This monorepo hosts the following packages:
 
 | Package | Version | Description |
 |---------|---------|-------------|
-| **[`@shz/pdf-sign-control`](./packages/pdf-sign-control)** | [![npm](https://img.shields.io/npm/v/@shz/pdf-sign-control)](https://www.npmjs.com/package/@shz/pdf-sign-control) | 🧠 **Core Library**: The framework-agnostic engine that handles PDF rendering (via PDF.js), signature field management, and user interactions. |
-| **[`@shz/pdf-sign-react`](./packages/pdf-sign-react)** | [![npm](https://img.shields.io/npm/v/@shz/pdf-sign-react)](https://www.npmjs.com/package/@shz/pdf-sign-react) | ⚛️ **React Wrapper**: A React component wrapper around the core control. |
-| **[`@shz/pdf-sign-angular`](./packages/pdf-sign-angular)** | [![npm](https://img.shields.io/npm/v/@shz/pdf-sign-angular)](https://www.npmjs.com/package/@shz/pdf-sign-angular) | 🛡️ **Angular Wrapper**: An Angular component library for seamless integration. |
-| **[`@shz/pdf-sign-standalone`](./packages/pdf-sign-standalone)** | [![npm](https://img.shields.io/npm/v/@shz/pdf-sign-standalone)](https://www.npmjs.com/package/@shz/pdf-sign-standalone) | 🌐 **Standalone**: A pre-bundled version suitable for direct usage in `<script>` tags or Vanilla JS apps. |
+| **[`@shznet/pdf-sign-control`](./packages/pdf-sign-control)** | [![npm](https://img.shields.io/npm/v/@shznet/pdf-sign-control)](https://www.npmjs.com/package/@shznet/pdf-sign-control) | 🧠 **Core Library**: The framework-agnostic engine that handles PDF rendering (via PDF.js), signature field management, and user interactions. |
+| **[`@shznet/pdf-sign-react`](./packages/pdf-sign-react)** | [![npm](https://img.shields.io/npm/v/@shznet/pdf-sign-react)](https://www.npmjs.com/package/@shznet/pdf-sign-react) | ⚛️ **React Wrapper**: A React component wrapper around the core control. |
+| **[`@shznet/pdf-sign-angular`](./packages/pdf-sign-angular)** | [![npm](https://img.shields.io/npm/v/@shznet/pdf-sign-angular)](https://www.npmjs.com/package/@shznet/pdf-sign-angular) | 🛡️ **Angular Wrapper**: An Angular component library for seamless integration. |
+| **[`@shznet/pdf-sign-standalone`](./packages/pdf-sign-standalone)** | [![npm](https://img.shields.io/npm/v/@shznet/pdf-sign-standalone)](https://www.npmjs.com/package/@shznet/pdf-sign-standalone) | 🌐 **Standalone**: A pre-bundled version suitable for direct usage in `<script>` tags or Vanilla JS apps. |
 
 ## ✨ Key Features
 
@@ -57,7 +57,7 @@ npx nx run-many -t build
 To build a specific package:
 
 ```bash
-npx nx build @shz/pdf-sign-control
+npx nx build @shznet/pdf-sign-control
 ```
 
 ## 📦 Release & Publishing
