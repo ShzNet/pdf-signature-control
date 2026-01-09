@@ -26,7 +26,7 @@ await pdfControl.load('https://example.com/sample.pdf');
 
 // 3. Add a signature field
 await pdfControl.addField({
-  pageIndex: 0, // 0-based index
+  pageNumber: 1, // 1-based page number
   rect: { x: 100, y: 100, width: 150, height: 50 },
   id: 'sign_1',
   type: 'signature', // or 'text', 'image', 'html'
@@ -72,17 +72,17 @@ Navigate to the next page.
 #### `previousPage(): void`
 Navigate to the previous page.
 
-#### `getPageDimensions(pageIndex: number): Promise<{ width: number; height: number } | null>`
+#### `getPageDimensions(pageNumber: number): Promise<{ width: number; height: number } | null>`
 Get dimensions of a specific page in PDF points (unscaled).
 
 **Parameters:**
-- `pageIndex`: Zero-based page index
+- `pageNumber`: 1-based page number
 
 **Returns:** Page dimensions `{ width, height }` in PDF points, or `null` if the page doesn't exist.
 
 **Example:**
 ```typescript
-const dims = await pdfControl.getPageDimensions(0); // First page
+const dims = await pdfControl.getPageDimensions(1); // First page
 console.log(`Page dimensions: ${dims.width} x ${dims.height} points`);
 ```
 

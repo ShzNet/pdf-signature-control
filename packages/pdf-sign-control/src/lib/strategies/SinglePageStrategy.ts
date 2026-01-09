@@ -69,7 +69,7 @@ export class SinglePageStrategy implements IViewModeStrategy {
             pageDimensions: pageDims
         });
 
-        const pageFields = this.fields.filter(f => f.pageIndex === pageIndex);
+        const pageFields = this.fields.filter(f => f.pageNumber === (pageIndex + 1));
         this.pageView.setFields(pageFields);
 
         // 2. Load page content in background
@@ -139,7 +139,7 @@ export class SinglePageStrategy implements IViewModeStrategy {
     setFields(fields: SignatureField[]): void {
         this.fields = fields;
         if (this.pageView) {
-            const pageFields = this.fields.filter(f => f.pageIndex === this.currentPage - 1);
+            const pageFields = this.fields.filter(f => f.pageNumber === this.currentPage);
             this.pageView.setFields(pageFields);
         }
     }

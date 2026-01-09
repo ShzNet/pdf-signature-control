@@ -66,7 +66,7 @@ export class ScrollStrategy implements IViewModeStrategy {
                 pageDimensions: pageDims  // Pass dimensions immediately
             });
 
-            const pageFields = this.fields.filter(f => f.pageIndex === i - 1);
+            const pageFields = this.fields.filter(f => f.pageNumber === i);
             pageView.setFields(pageFields);
 
             this.pageViews.push(pageView);
@@ -192,7 +192,7 @@ export class ScrollStrategy implements IViewModeStrategy {
         this.fields = fields;
         // Update all existing page views
         this.pageViews.forEach(pv => {
-            const pageFields = this.fields.filter(f => f.pageIndex === pv.pageIndex);
+            const pageFields = this.fields.filter(f => f.pageNumber === pv.pageIndex + 1);
             pv.setFields(pageFields);
         });
     }

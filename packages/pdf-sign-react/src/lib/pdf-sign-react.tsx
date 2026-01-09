@@ -27,7 +27,7 @@ export interface PdfSignReactRef {
   /** Print the PDF */
   print(options?: { withSignatures?: boolean }): Promise<void>;
   /** Get dimensions of a specific page in PDF points */
-  getPageDimensions(pageIndex: number): Promise<{ width: number; height: number } | null>;
+  getPageDimensions(pageNumber: number): Promise<{ width: number; height: number } | null>;
   /** Add a signature field */
   addField(field: SignatureField): Promise<void>;
   /** Remove a signature field by ID */
@@ -108,9 +108,9 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
         await controlRef.current.print(options);
       }
     },
-    getPageDimensions: async (pageIndex) => {
+    getPageDimensions: async (pageNumber) => {
       if (controlRef.current) {
-        return await controlRef.current.getPageDimensions(pageIndex);
+        return await controlRef.current.getPageDimensions(pageNumber);
       }
       return null;
     },

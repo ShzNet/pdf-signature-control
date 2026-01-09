@@ -126,13 +126,13 @@ await this.pdfComponent.setViewMode('single');
 const mode = this.pdfComponent.getViewMode();
 
 // Page Dimensions
-const dims = await this.pdfComponent.getPageDimensions(0); // Page 1 (0-based)
+const dims = await this.pdfComponent.getPageDimensions(1); // Page 1 (1-based)
 console.log(`Page size: ${dims?.width} x ${dims?.height} points`);
 
 // Field Management
 this.pdfComponent.addField({
   id: 'sig1',
-  pageIndex: 0,
+  pageNumber: 1,
   rect: { x: 100, y: 100, width: 200, height: 80 },
   type: 'signature',
   content: '<svg>...</svg>',

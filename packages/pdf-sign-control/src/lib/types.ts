@@ -57,7 +57,8 @@ export type SignatureFieldType = 'text' | 'html' | 'image' | 'signature';
 
 export interface SignatureField {
     id: string;
-    pageIndex: number;
+    /** 1-based Page Number (1..N) */
+    pageNumber: number;
     /** Standard PDF Rect (points): x, y, width, height */
     rect: {
         x: number;

@@ -226,9 +226,9 @@ export class PdfViewer {
             await this.readyPromise;
         }
 
-        // 1. Validate Page Index
-        if (field.pageIndex < 0 || field.pageIndex >= this.pdfDocument.numPages) {
-            throw new Error(`Invalid page index: ${field.pageIndex}. Document has ${this.pdfDocument.numPages} pages.`);
+        // 1. Validate Page Number (1-based)
+        if (field.pageNumber < 1 || field.pageNumber > this.pdfDocument.numPages) {
+            throw new Error(`Invalid page number: ${field.pageNumber}. Document has ${this.pdfDocument.numPages} pages.`);
         }
 
         // 2. Validate Dimensions
@@ -238,12 +238,12 @@ export class PdfViewer {
 
         // 3. Validate Boundaries
         try {
-            let dims = this.pageInfo.get(field.pageIndex);
+            let dims = this.pageInfo.get(field.pageNumber - 1);
             if (!dims) {
                 // Fallback if pageInfo missing (unlikely if loaded)
-                const page = await this.pdfDocument.getPage(field.pageIndex + 1);
+                const page = await this.pdfDocument.getPage(field.pageNumber);
                 const vp = page.getViewport({ scale: 1.0 });
-                this.pageInfo.set(field.pageIndex, { width: vp.width, height: vp.height });
+                this.pageInfo.set(field.pageNumber - 1, { width: vp.width, height: vp.height });
                 dims = { width: vp.width, height: vp.height };
             }
 
@@ -342,7 +342,8 @@ export class PdfViewer {
             this.strategy?.setFields(this.fields);
             return;
         }
-        const newPageIndex = parseInt(pageIndexStr, 10);
+        const newPageIndexZeroBased = parseInt(pageIndexStr, 10);
+        const newPageNumber = newPageIndexZeroBased + 1;
 
         // 2. Calculate Coordinates using ELEMENT position (where the field visual is)
         const rect = pageElement.getBoundingClientRect();
@@ -375,7 +376,7 @@ export class PdfViewer {
 
         // 4. Update Field
         this.updateField(fieldId, {
-            pageIndex: newPageIndex,
+            pageNumber: newPageNumber,
             rect: {
                 ...field.rect,
                 x: pdfX,
@@ -505,7 +506,7 @@ export class PdfViewer {
 
                 // 4. Overlay Signatures
                 if (options?.withSignatures) {
-                    const fieldsOnPage = this.fields.filter(f => f.pageIndex === (i - 1));
+                    const fieldsOnPage = this.fields.filter(f => f.pageNumber === i);
                     fieldsOnPage.forEach(field => {
                         const fieldEl = document.createElement('div');
                         fieldEl.className = 'print-field select-none';

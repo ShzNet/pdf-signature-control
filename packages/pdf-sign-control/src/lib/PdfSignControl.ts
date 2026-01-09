@@ -51,8 +51,8 @@ export class PdfSignControl {
         return this.viewer.getScale();
     }
 
-    async getPageDimensions(pageIndex: number): Promise<{ width: number; height: number } | null> {
-        return this.viewer.getPageDimensions(pageIndex);
+    async getPageDimensions(pageNumber: number): Promise<{ width: number; height: number } | null> {
+        return this.viewer.getPageDimensions(pageNumber - 1);
     }
 
     // Event handling
