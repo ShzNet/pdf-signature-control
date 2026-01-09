@@ -23,7 +23,10 @@ export interface PdfSignReactRef {
   /** Set view mode */
   setViewMode(mode: ViewMode): Promise<void>;
   /** Get current view mode */
+  /** Get current view mode */
   getViewMode(): ViewMode;
+  /** Print the PDF */
+  print(options?: { withSignatures?: boolean }): Promise<void>;
 }
 
 export interface PdfSignReactProps {
@@ -31,6 +34,8 @@ export interface PdfSignReactProps {
   src?: string | Uint8Array | ArrayBuffer;
   /** Initial view mode: 'scroll' or 'single' */
   viewMode?: ViewMode;
+  /** Current zoom scale */
+  scale?: number;
   /** Enable gesture zoom (Ctrl+scroll, pinch) - default: true */
   zoomable?: boolean;
   /** PDF.js loader options */
@@ -87,6 +92,11 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
       }
     },
     getViewMode: () => controlRef.current?.getViewMode() ?? 'scroll',
+    print: async (options) => {
+      if (controlRef.current) {
+        await controlRef.current.print(options);
+      }
+    },
   }));
 
   // Keep track of latest props for event handlers to avoid stale closures
@@ -145,6 +155,17 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
       controlRef.current.setViewMode(props.viewMode);
     }
   }, [props.viewMode]);
+
+  // Handle scale changes
+  useEffect(() => {
+    if (controlRef.current && props.scale !== undefined) {
+      const currentScale = controlRef.current.getScale();
+      // Only update if difference is significant to avoid floating point loops
+      if (Math.abs(currentScale - props.scale) > 0.001) {
+        controlRef.current.setScale(props.scale);
+      }
+    }
+  }, [props.scale]);
 
   // Handle fields changes
   useEffect(() => {

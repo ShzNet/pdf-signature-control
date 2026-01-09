@@ -81,6 +81,11 @@ export class PdfSignControl {
         this.viewer.updateField(fieldId, updates);
     }
 
+    async print(options?: { withSignatures?: boolean }): Promise<void> {
+        return this.viewer.print(options);
+    }
+
+
     destroy() {
         this.viewer.destroy();
     }

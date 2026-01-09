@@ -144,4 +144,8 @@ export class App {
     const currentScale = this.pdfComponent?.getScale() ?? 1;
     this.pdfComponent?.setScale(currentScale - 0.25);
   }
+
+  printOriginal() {
+    this.pdfComponent?.print({ withSignatures: false });
+  }
 }

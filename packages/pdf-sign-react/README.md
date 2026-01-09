@@ -5,7 +5,7 @@ React component wrapper for `@shznet/pdf-sign-control`.
 ## Installation
 
 ```bash
-npm install @shznet/pdf-sign-react pdfjs-dist
+npm install @shznet/pdf-sign-react
 ```
 
 ## Usage
@@ -33,6 +33,12 @@ export function App() {
     </div>
   );
 }
+```
+
+```tsx
+<button onClick={() => controlRef.current?.print({ withSignatures: true })}>
+  Print PDF
+</button>
 ```
 
 ## Props

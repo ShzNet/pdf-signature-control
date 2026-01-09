@@ -5,7 +5,7 @@ Angular component wrapper for `@shznet/pdf-sign-control`.
 ## Installation
 
 ```bash
-npm install @shznet/pdf-sign-angular pdfjs-dist
+npm install @shznet/pdf-sign-angular
 ```
 
 ## Usage
@@ -32,6 +32,15 @@ Use the component in your template:
   (loaded)="onPdfLoaded()"
 >
 </lib-pdf-sign-angular>
+```
+
+```typescript
+// Component Code
+@ViewChild(PdfSignAngularComponent) pdfSign!: PdfSignAngularComponent;
+
+print() {
+  this.pdfSign.print({ withSignatures: true });
+}
 ```
 
 ## Inputs & Outputs

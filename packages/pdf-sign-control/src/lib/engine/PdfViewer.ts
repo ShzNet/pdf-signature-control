@@ -356,6 +356,198 @@ export class PdfViewer {
         this.eventBus.off(event, handler);
     }
 
+    async print(options?: { withSignatures?: boolean }): Promise<void> {
+        if (!this.pdfDocument) return;
+
+        // 1. Create hidden iframe
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.top = '0';
+        iframe.style.left = '-10000px';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = 'none';
+        iframe.style.visibility = 'hidden';
+        document.body.appendChild(iframe);
+
+        const iframeDoc = iframe.contentWindow?.document;
+        if (!iframeDoc) {
+            document.body.removeChild(iframe);
+            throw new Error('Could not create print iframe');
+        }
+
+        // 2. Copy Stylesheets first (so our overrides take precedence)
+        Array.from(document.styleSheets).forEach(sheet => {
+            try {
+                if (sheet.href) {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = sheet.href;
+                    iframeDoc.head.appendChild(link);
+                } else if (sheet.cssRules) {
+                    const newStyle = document.createElement('style');
+                    Array.from(sheet.cssRules).forEach(rule => {
+                        newStyle.appendChild(document.createTextNode(rule.cssText));
+                    });
+                    iframeDoc.head.appendChild(newStyle);
+                }
+            } catch (e) {
+                console.warn('Could not copy stylesheet', e);
+            }
+        });
+
+        // 3. Inject Print Specific Styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @page { margin: 0; size: auto; }
+            html, body { 
+                margin: 0 !important; 
+                padding: 0 !important;
+                height: auto !important;
+                overflow: visible !important;
+                background-color: white !important;
+            }
+            /* Hide scrollbars */
+            ::-webkit-scrollbar { display: none; }
+            * { -ms-overflow-style: none; scrollbar-width: none; }
+
+            .print-page { 
+                position: relative; 
+                page-break-after: always; 
+                width: 100%; 
+                overflow: hidden;
+                margin: 0;
+                padding: 0;
+            }
+            .print-page img { 
+                display: block; 
+                width: 100%; 
+                height: auto; 
+            }
+            .print-field {
+                position: absolute;
+                border: 1px solid transparent; 
+            }
+            /* Hide UI controls in print */
+            .sc-resize-handle, .sc-delete-btn { display: none !important; }
+        `;
+        iframeDoc.head.appendChild(style);
+
+        const container = document.createElement('div');
+        iframeDoc.body.appendChild(container);
+
+        try {
+            // 3. Render Pages
+            const printScale = 2.0; // High res for print
+            const numPages = this.pdfDocument.numPages;
+
+            for (let i = 1; i <= numPages; i++) {
+                const page = await this.pdfDocument.getPage(i);
+                const viewport = page.getViewport({ scale: printScale });
+
+                // Render to Canvas
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                if (!context) continue;
+
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                await page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                } as any).promise;
+
+                // Create Page Container
+                const pageWrapper = document.createElement('div');
+                pageWrapper.className = 'print-page';
+
+                // Add PDF Image
+                const img = document.createElement('img');
+                img.src = canvas.toDataURL('image/jpeg', 0.8);
+                pageWrapper.appendChild(img);
+
+                // 4. Overlay Signatures
+                if (options?.withSignatures) {
+                    const fieldsOnPage = this.fields.filter(f => f.pageIndex === (i - 1));
+                    fieldsOnPage.forEach(field => {
+                        const fieldEl = document.createElement('div');
+                        fieldEl.className = 'print-field select-none';
+
+                        const vpRaw = page.getViewport({ scale: 1.0 });
+                        const leftPct = (field.rect.x / vpRaw.width) * 100;
+                        const topCss = vpRaw.height - field.rect.y - field.rect.height;
+                        const topPct = (topCss / vpRaw.height) * 100;
+
+                        const widthPct = (field.rect.width / vpRaw.width) * 100;
+                        const heightPct = (field.rect.height / vpRaw.height) * 100;
+
+                        fieldEl.style.left = `${leftPct}%`;
+                        fieldEl.style.top = `${topPct}%`;
+                        fieldEl.style.width = `${widthPct}%`;
+                        fieldEl.style.height = `${heightPct}%`;
+                        fieldEl.style.display = 'flex';
+                        fieldEl.style.alignItems = 'center';
+                        fieldEl.style.justifyContent = 'center';
+                        fieldEl.style.overflow = 'hidden'; // Ensure content stays within bounds
+
+                        // Apply field styles
+                        if (field.style) {
+                            Object.assign(fieldEl.style, field.style);
+                        }
+
+                        if (field.type === 'text') {
+                            fieldEl.textContent = field.content || '';
+                            fieldEl.style.fontFamily = 'sans-serif';
+                            fieldEl.style.fontSize = '2cqw';
+                            fieldEl.style.whiteSpace = 'pre-wrap';
+                            fieldEl.style.textAlign = 'center';
+                        } else if (field.type === 'image') {
+                            const fImg = document.createElement('img');
+                            fImg.src = field.content || '';
+                            fImg.style.width = '100%';
+                            fImg.style.height = '100%';
+                            fImg.style.objectFit = 'contain';
+                            fieldEl.appendChild(fImg);
+                        } else if (field.type === 'signature') {
+                            fieldEl.innerHTML = field.content || '';
+                            const innerImg = fieldEl.querySelector('img');
+                            if (innerImg) {
+                                innerImg.style.width = '100%';
+                                innerImg.style.height = '100%';
+                            }
+                            const innerSvg = fieldEl.querySelector('svg');
+                            if (innerSvg) {
+                                innerSvg.style.width = '100%';
+                                innerSvg.style.height = '100%';
+                            }
+                        }
+
+                        pageWrapper.appendChild(fieldEl);
+                    });
+                }
+
+                container.appendChild(pageWrapper);
+            }
+
+            // 5. Print
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            iframe.contentWindow?.focus();
+            iframe.contentWindow?.print();
+
+        } catch (err) {
+            console.error('Print failed', err);
+            throw err;
+        } finally {
+            setTimeout(() => {
+                if (document.body.contains(iframe)) {
+                    document.body.removeChild(iframe);
+                }
+            }, 300000); // 5 mins fallback
+        }
+    }
+
     destroy() {
         this.isDestroyed = true;
         this.zoomHandler.destroy();

@@ -48,6 +48,10 @@ if (app) {
             <option value="single">Single Page</option>
         </select>
     </div>
+    
+    <div class="control-group">
+        <button id="print-original" title="Print">Print</button>
+    </div>
   `;
   mainContent.appendChild(toolbar);
 
@@ -91,6 +95,10 @@ if (app) {
   viewModeSelect.onchange = async () => {
     await control.setViewMode(viewModeSelect.value as ViewMode);
   };
+
+  const printOriginalBtn = toolbar.querySelector('#print-original') as HTMLButtonElement;
+
+  printOriginalBtn.onclick = () => control.print({ withSignatures: false });
 
   let currentScale = 1.0;
   zoomIn.onclick = () => {

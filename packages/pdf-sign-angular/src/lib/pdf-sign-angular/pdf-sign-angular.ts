@@ -181,6 +181,11 @@ export class PdfSignAngularComponent implements OnInit, OnDestroy, OnChanges {
     return this.control?.getViewMode() ?? 'scroll';
   }
 
+  /** Print the PDF */
+  print(options?: { withSignatures?: boolean }): Promise<void> {
+    return this.control?.print(options) ?? Promise.resolve();
+  }
+
   // Field Management Wrappers
 
   addField(field: any): void {

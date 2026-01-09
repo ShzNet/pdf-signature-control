@@ -57,6 +57,10 @@ Controls the zoom level of the document.
 ### `getFields(): SignatureField[]`
 Returns the current list of fields.
 
+### `print(options?: { withSignatures?: boolean }): Promise<void>`
+Prints the current document.
+- `withSignatures`: If `true`, prints with signature fields overlay. Defaults to `false`.
+
 ## License
 
 MIT

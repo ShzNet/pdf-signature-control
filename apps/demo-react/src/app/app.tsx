@@ -130,9 +130,9 @@ export function App() {
           <div className="divider"></div>
 
           <div className="control-group">
-            <button onClick={() => pdfRef.current?.setScale((pdfRef.current?.getScale() ?? 1) - 0.25)} title="Zoom Out">−</button>
+            <button onClick={() => setScale(s => Math.max(25, s - 25))} title="Zoom Out">−</button>
             <span id="zoom-info" style={{ minWidth: '50px', textAlign: 'center' }}>{scale}%</span>
-            <button onClick={() => pdfRef.current?.setScale((pdfRef.current?.getScale() ?? 1) + 0.25)} title="Zoom In">+</button>
+            <button onClick={() => setScale(s => Math.min(500, s + 25))} title="Zoom In">+</button>
           </div>
 
           <div className="divider"></div>
@@ -145,6 +145,9 @@ export function App() {
               <option value="scroll">Scroll Mode</option>
               <option value="single">Single Page</option>
             </select>
+            <div className="control-group">
+              <button onClick={() => pdfRef.current?.print({ withSignatures: false })} title="Print">Print</button>
+            </div>
           </div>
         </div>
 
@@ -153,6 +156,7 @@ export function App() {
             ref={pdfRef}
             src="https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf"
             viewMode="scroll"
+            scale={scale / 100}
             pdfLoaderOptions={pdfLoaderOptions}
             onPageChange={onPageChange}
             onScaleChange={onScaleChange}
