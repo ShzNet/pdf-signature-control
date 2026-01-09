@@ -9,6 +9,7 @@ export interface PdfPageViewOptions {
     pageIndex: number;
     scale: number;
     eventBus: EventBus;
+    pageDimensions?: { width: number, height: number };  // Page dimensions from PDF metadata
 }
 
 export class PdfPageView {
@@ -41,12 +42,29 @@ export class PdfPageView {
         this.signatureLayer = new SignatureLayer(this.eventBus);
         this.element.appendChild(this.signatureLayer.getElement());
 
+        // SET SIGNATURE LAYER DIMENSIONS IMMEDIATELY if provided
+        // This ensures fields can be added right away, before canvas renders
+        if (options.pageDimensions) {
+            this.signatureLayer.setPageDimensions(
+                options.pageDimensions.width,
+                options.pageDimensions.height,
+                this.scale
+            );
+        }
+
         this.container.appendChild(this.element);
     }
 
     setPdfPage(pdfPage: PDFPageProxy) {
         this.pdfPage = pdfPage;
         this.canvasLayer.setPage(pdfPage);
+
+        // IMMEDIATELY set SignatureLayer dimensions so fields can be added right away
+        // This is synchronous and doesn't wait for canvas to render
+        const unscaledViewport = pdfPage.getViewport({ scale: 1.0 });
+        this.signatureLayer.setPageDimensions(unscaledViewport.width, unscaledViewport.height, this.scale);
+
+        // Trigger async canvas render (SignatureLayer is already ready)
         this.render();
     }
 
@@ -61,11 +79,11 @@ export class PdfPageView {
         this.element.style.width = `${viewport.width}px`;
         this.element.style.height = `${viewport.height}px`;
 
-        await this.canvasLayer.render(this.scale);
-
         // Pass unscaled page height (viewport.height / scale) to signature layer for coordinate conversion
         const unscaledViewport = this.pdfPage.getViewport({ scale: 1.0 });
         this.signatureLayer.setPageDimensions(unscaledViewport.width, unscaledViewport.height, this.scale);
+
+        await this.canvasLayer.render(this.scale);
     }
 
     /**
@@ -78,10 +96,10 @@ export class PdfPageView {
         this.element.style.width = `${viewport.width}px`;
         this.element.style.height = `${viewport.height}px`;
 
-        await this.canvasLayer.render(this.scale, true);
-
         const unscaledViewport = this.pdfPage.getViewport({ scale: 1.0 });
         this.signatureLayer.setPageDimensions(unscaledViewport.width, unscaledViewport.height, this.scale);
+
+        await this.canvasLayer.render(this.scale, true);
     }
 
     /**
@@ -94,10 +112,10 @@ export class PdfPageView {
         this.element.style.width = `${viewport.width}px`;
         this.element.style.height = `${viewport.height}px`;
 
-        await this.canvasLayer.render(this.scale, false);
-
         const unscaledViewport = this.pdfPage.getViewport({ scale: 1.0 });
         this.signatureLayer.setPageDimensions(unscaledViewport.width, unscaledViewport.height, this.scale);
+
+        await this.canvasLayer.render(this.scale, false);
     }
 
     updateScale(scale: number) {

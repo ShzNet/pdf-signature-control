@@ -20,13 +20,15 @@ export class SinglePageStrategy implements IViewModeStrategy {
     private pageContainer!: HTMLElement;
     private zoomTimeout: ReturnType<typeof setTimeout> | null = null;
     private fields: SignatureField[] = [];
+    private pageInfo: Map<number, { width: number, height: number }> = new Map();
 
-    async init(container: HTMLElement, pdfDocument: PDFDocumentProxy, eventBus: EventBus, initialScale?: number): Promise<void> {
+    async init(container: HTMLElement, pdfDocument: PDFDocumentProxy, eventBus: EventBus, initialScale?: number, pageInfo?: Map<number, { width: number, height: number }>): Promise<void> {
         this.container = container;
         this.pdfDocument = pdfDocument;
         this.eventBus = eventBus;
         this.totalPages = pdfDocument.numPages;
         this.scale = initialScale ?? 1.0;
+        this.pageInfo = pageInfo ?? new Map();
 
         this.initContainer();
         await this.renderCurrentPage();
@@ -54,20 +56,33 @@ export class SinglePageStrategy implements IViewModeStrategy {
 
         this.pageContainer.innerHTML = '';
 
-        const pdfPage = await this.pdfDocument.getPage(this.currentPage);
+        // 1. Create structure immediately
+        // We assume pageInfo is populated by PdfViewer logic upfront.
+        const pageIndex = this.currentPage - 1;
+        const pageDims = this.pageInfo.get(pageIndex);
 
         this.pageView = new PdfPageView({
             container: this.pageContainer,
-            pageIndex: this.currentPage - 1,
+            pageIndex: pageIndex,
             scale: this.scale,
-            eventBus: this.eventBus
+            eventBus: this.eventBus,
+            pageDimensions: pageDims
         });
 
-        const pageFields = this.fields.filter(f => f.pageIndex === this.currentPage - 1);
+        const pageFields = this.fields.filter(f => f.pageIndex === pageIndex);
         this.pageView.setFields(pageFields);
 
-        this.pageView.setPdfPage(pdfPage);
+        // 2. Load page content in background
+        this.pdfDocument.getPage(this.currentPage).then(pdfPage => {
+            // Ensure we are still on the same page view
+            if (this.pageView && this.pageView.pageIndex === (pdfPage.pageNumber - 1)) {
+                this.pageView.setPdfPage(pdfPage);
+            }
+        }).catch(err => {
+            console.error(`Error loading page ${this.currentPage}:`, err);
+        });
 
+        // 3. Emit event immediately
         this.eventBus.emit('page:change', {
             page: this.currentPage,
             total: this.totalPages

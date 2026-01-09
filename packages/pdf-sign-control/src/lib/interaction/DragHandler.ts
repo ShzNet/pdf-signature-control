@@ -20,6 +20,9 @@ export class DragHandler {
     private startY = 0;
     private initialGhostLeft = 0;
     private initialGhostTop = 0;
+    private currentGhostLeft = 0;
+    private currentGhostTop = 0;
+    private hasMoved = false;
 
     private onDragEndCallback?: (data: DragEventData) => void;
 
@@ -27,8 +30,9 @@ export class DragHandler {
         this.onDragEndCallback = onDragEnd;
     }
 
-    startDrag(e: MouseEvent | TouchEvent, element: HTMLElement, fieldId: string, _scale: number) {
+    startDrag(e: MouseEvent | TouchEvent, element: HTMLElement, fieldId: string) {
         this.isDragging = true;
+        this.hasMoved = false;
         this.originalElement = element;
         this.fieldId = fieldId;
 
@@ -59,6 +63,8 @@ export class DragHandler {
 
         this.initialGhostLeft = rect.left;
         this.initialGhostTop = rect.top;
+        this.currentGhostLeft = rect.left;
+        this.currentGhostTop = rect.top;
 
         // Hide original
         element.style.opacity = '0';
@@ -77,11 +83,17 @@ export class DragHandler {
         const dx = clientX - this.startX;
         const dy = clientY - this.startY;
 
-        const newLeft = this.initialGhostLeft + dx;
-        const newTop = this.initialGhostTop + dy;
+        // Threshold to treat as move (avoid jitter)
+        if (!this.hasMoved && Math.hypot(dx, dy) < 3) {
+            return;
+        }
+        this.hasMoved = true;
 
-        this.ghostElement.style.left = `${newLeft}px`;
-        this.ghostElement.style.top = `${newTop}px`;
+        this.currentGhostLeft = this.initialGhostLeft + dx;
+        this.currentGhostTop = this.initialGhostTop + dy;
+
+        this.ghostElement.style.left = `${this.currentGhostLeft}px`;
+        this.ghostElement.style.top = `${this.currentGhostTop}px`;
 
         e.preventDefault();
     }
@@ -92,10 +104,9 @@ export class DragHandler {
         const clientX = e instanceof MouseEvent ? e.clientX : (e as any).changedTouches?.[0]?.clientX ?? 0;
         const clientY = e instanceof MouseEvent ? e.clientY : (e as any).changedTouches?.[0]?.clientY ?? 0;
 
-        // Capture Ghost Position before removal
-        const ghostRect = this.ghostElement.getBoundingClientRect();
-        const elementX = ghostRect.left;
-        const elementY = ghostRect.top;
+        // Use calculated position to avoid transform distortion
+        const elementX = this.currentGhostLeft;
+        const elementY = this.currentGhostTop;
 
         // Cleanup Ghost
         this.ghostElement.remove();
@@ -105,7 +116,8 @@ export class DragHandler {
         this.originalElement.style.opacity = '1';
         document.body.style.cursor = '';
 
-        if (this.onDragEndCallback) {
+        // Only emit update if actually moved
+        if (this.hasMoved && this.onDragEndCallback) {
             this.onDragEndCallback({
                 fieldId: this.fieldId,
                 clientX,
@@ -118,6 +130,7 @@ export class DragHandler {
         this.isDragging = false;
         this.originalElement = null;
         this.fieldId = null;
+        this.hasMoved = false;
     }
 
     isActive(): boolean {

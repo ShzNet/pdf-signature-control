@@ -1,12 +1,14 @@
 {
-  "name": "pdf-sign-angular",
+  "name": "@shz/pdf-sign-angular",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/pdf-sign-angular/src",
   "prefix": "lib",
   "projectType": "library",
   "release": {
     "version": {
-      "manifestRootsToUpdate": ["dist/{projectRoot}"],
+      "manifestRootsToUpdate": [
+        "dist/{projectRoot}"
+      ],
       "currentVersionResolver": "git-tag",
       "fallbackCurrentVersionResolver": "disk"
     }
@@ -15,7 +17,9 @@
   "targets": {
     "build": {
       "executor": "@nx/angular:package",
-      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/dist/{projectRoot}"
+      ],
       "options": {
         "project": "packages/pdf-sign-angular/ng-package.json",
         "tsConfig": "packages/pdf-sign-angular/tsconfig.lib.json"
@@ -35,7 +39,9 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{projectRoot}/test-output/jest/coverage"],
+      "outputs": [
+        "{projectRoot}/test-output/jest/coverage"
+      ],
       "options": {
         "jestConfig": "packages/pdf-sign-angular/jest.config.cts",
         "tsConfig": "packages/pdf-sign-angular/tsconfig.spec.json"

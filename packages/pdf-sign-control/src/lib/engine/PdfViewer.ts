@@ -21,8 +21,10 @@ export class PdfViewer {
     private pdfDocument: PDFDocumentProxy | null = null;
     private strategy: IViewModeStrategy | null = null;
     private currentViewMode: ViewMode;
-
+    private pageInfo: Map<number, { width: number, height: number }> = new Map();
+    private readyPromise: Promise<void> | null = null;
     private currentScale = 1.0;
+    private isDestroyed = false;
 
     constructor(options: PdfViewerOptions) {
         this.container = options.container;
@@ -41,11 +43,7 @@ export class PdfViewer {
             getScale: () => this.getScale(),
             setScale: (scale) => this.setScale(scale)
         });
-        this.zoomHandler = new ZoomHandler({
-            container: this.container,
-            getScale: () => this.getScale(),
-            setScale: (scale) => this.setScale(scale)
-        });
+
         this.zoomHandler.init();
 
         // Handle internal events
@@ -65,25 +63,49 @@ export class PdfViewer {
     async load(source: string | Uint8Array | ArrayBuffer): Promise<void> {
         try {
             this.pdfDocument = await this.loader.loadDocument(source);
+            if (this.isDestroyed) {
+                console.warn('PdfViewer destroyed before document loaded. Aborting setup.');
+                return;
+            }
+
             this.eventBus.emit('document:loaded', this.pdfDocument);
-            console.log('PDF Loaded, pages:', this.pdfDocument?.numPages);
+
+            // Get ALL page dimensions immediately from PDF metadata
+            // This is fast as it just reads page metadata, no rendering needed
+            this.pageInfo.clear();
+            for (let i = 1; i <= this.pdfDocument.numPages; i++) {
+                if (this.isDestroyed) return; // Check loop too just in case
+                const page = await this.pdfDocument.getPage(i);
+                const viewport = page.getViewport({ scale: 1.0 });
+                this.pageInfo.set(i - 1, { width: viewport.width, height: viewport.height });
+            }
 
             await this.initStrategy();
         } catch (error) {
+            if (this.isDestroyed) return;
             this.eventBus.emit('error', error);
             throw error;
         }
     }
 
     private async initStrategy(): Promise<void> {
-        if (!this.pdfDocument) return;
+        if (!this.pdfDocument || this.isDestroyed) return;
 
         if (this.strategy) {
             this.strategy.destroy();
         }
 
         this.strategy = this.createStrategy(this.currentViewMode);
-        await this.strategy.init(this.container, this.pdfDocument, this.eventBus, this.currentScale);
+        // Create ready promise that resolves when init completes
+        this.readyPromise = this.strategy.init(this.container, this.pdfDocument, this.eventBus, this.currentScale, this.pageInfo);
+        await this.readyPromise;
+
+        if (this.isDestroyed) {
+            // If destroyed during strategy init, ensure we clean up anything that might have been created
+            this.strategy.destroy();
+            return;
+        }
+
         if (this.fields.length > 0) {
             this.strategy.setFields(this.fields);
         }
@@ -159,6 +181,15 @@ export class PdfViewer {
             throw new Error('PDF document not loaded');
         }
 
+        if (!this.strategy) {
+            throw new Error('PDF viewer not ready. Please wait for PDF to fully load.');
+        }
+
+        // Wait for strategy init to fully complete (pageViews must be ready)
+        if (this.readyPromise) {
+            await this.readyPromise;
+        }
+
         // 1. Validate Page Index
         if (field.pageIndex < 0 || field.pageIndex >= this.pdfDocument.numPages) {
             throw new Error(`Invalid page index: ${field.pageIndex}. Document has ${this.pdfDocument.numPages} pages.`);
@@ -171,9 +202,14 @@ export class PdfViewer {
 
         // 3. Validate Boundaries
         try {
-            // Note: pageIndex is 0-based, getPage is 1-based
-            const page = await this.pdfDocument.getPage(field.pageIndex + 1);
-            const viewport = page.getViewport({ scale: 1.0 }); // Get unscaled dimensions
+            let dims = this.pageInfo.get(field.pageIndex);
+            if (!dims) {
+                // Fallback if pageInfo missing (unlikely if loaded)
+                const page = await this.pdfDocument.getPage(field.pageIndex + 1);
+                const vp = page.getViewport({ scale: 1.0 });
+                this.pageInfo.set(field.pageIndex, { width: vp.width, height: vp.height });
+                dims = { width: vp.width, height: vp.height };
+            }
 
             // Check if field is within page boundaries (allowing small floating point margin)
             // PDF Coordinates: 0,0 is Bottom-Left.
@@ -185,12 +221,12 @@ export class PdfViewer {
                 throw new Error(`Field position out of bounds (negative coordinates).`);
             }
 
-            if (field.rect.x + field.rect.width > viewport.width) {
-                throw new Error(`Field exceeds page width. (Field X: ${field.rect.x}, Width: ${field.rect.width}, Page Width: ${viewport.width})`);
+            if (field.rect.x + field.rect.width > dims.width) {
+                throw new Error(`Field exceeds page width. (Field X: ${field.rect.x}, Width: ${field.rect.width}, Page Width: ${dims.width})`);
             }
 
-            if (field.rect.y + field.rect.height > viewport.height) {
-                throw new Error(`Field exceeds page height. (Field Y: ${field.rect.y}, Height: ${field.rect.height}, Page Height: ${viewport.height})`);
+            if (field.rect.y + field.rect.height > dims.height) {
+                throw new Error(`Field exceeds page height. (Field Y: ${field.rect.y}, Height: ${field.rect.height}, Page Height: ${dims.height})`);
             }
 
         } catch (err) {
@@ -233,7 +269,6 @@ export class PdfViewer {
 
         // If no page found directly under mouse, find the nearest page
         if (!pageElement || !pageElement.dataset.pageIndex) {
-            console.log('Field dropped outside. Finding nearest page...');
             const allPages = Array.from(this.container.querySelectorAll('.page-view')) as HTMLElement[];
 
             let minDistance = Infinity;
@@ -311,8 +346,6 @@ export class PdfViewer {
                 y: pdfY
             }
         });
-
-        console.log(`Field dropped on Page ${newPageIndex + 1}`);
     }
 
     on(event: string, handler: (data: any) => void) {
@@ -324,6 +357,7 @@ export class PdfViewer {
     }
 
     destroy() {
+        this.isDestroyed = true;
         this.zoomHandler.destroy();
         this.strategy?.destroy();
         this.loader.destroy();

@@ -105,7 +105,7 @@ export class ResizeHandler {
         e.preventDefault();
     }
 
-    handleEnd(e: MouseEvent | TouchEvent) {
+    handleEnd() {
         if (!this.isResizing || !this.resizedElement || !this.fieldId) return;
 
         const finalLeft = parseFloat(this.resizedElement.style.left);

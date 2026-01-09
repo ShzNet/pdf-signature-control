@@ -115,10 +115,10 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
     });
 
     // Field Events
-    controlRef.current.on('field:add', (field: any) => propsRef.current.onFieldAdd?.(field));
-    controlRef.current.on('field:remove', (data: any) => propsRef.current.onFieldRemove?.(data));
-    controlRef.current.on('field:update', (data: any) => propsRef.current.onFieldUpdate?.(data));
-    controlRef.current.on('fields:change', (fields: any[]) => propsRef.current.onFieldsChange?.(fields));
+    controlRef.current.on('field:add', (field: SignatureField) => propsRef.current.onFieldAdd?.(field));
+    controlRef.current.on('field:remove', (data: { fieldId: string }) => propsRef.current.onFieldRemove?.(data));
+    controlRef.current.on('field:update', (data: { fieldId: string, updates: Partial<SignatureField> }) => propsRef.current.onFieldUpdate?.(data));
+    controlRef.current.on('fields:change', (fields: SignatureField[]) => propsRef.current.onFieldsChange?.(fields));
 
     if (props.onReady) {
       props.onReady(controlRef.current);
@@ -149,9 +149,7 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
   // Handle fields changes
   useEffect(() => {
     if (controlRef.current && props.fields) {
-      // Loop Prevention: Check if fields are actually different
       const currentFields = controlRef.current.getFields();
-
       if (JSON.stringify(currentFields) === JSON.stringify(props.fields)) {
         return;
       }

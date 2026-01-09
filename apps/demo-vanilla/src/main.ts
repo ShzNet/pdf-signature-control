@@ -136,8 +136,6 @@ if (app) {
           backgroundColor: 'rgba(0, 123, 255, 0.05)',
         }
       };
-
-      console.log('Adding field from LeftPanel:', field);
       control.addField(field).catch((err: Error) => alert(err.message));
     },
     () => {

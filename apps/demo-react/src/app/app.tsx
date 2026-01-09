@@ -61,7 +61,7 @@ export function App() {
       return;
     }
 
-    const fieldId = `field-${Date.now()}`;
+    const fieldId = `field-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const field: SignatureField = {
       id: fieldId,
       pageIndex: newField.page - 1,
@@ -90,11 +90,19 @@ export function App() {
   };
 
   const handleUpdateField = (id: string, key: 'draggable' | 'resizable', value: boolean) => {
-    setFields(prev => prev.map(f => f.id === id ? { ...f, [key]: value } : f));
+    // Use control API for updates (uncontrolled pattern)
+    const control = pdfRef.current?.getControl();
+    if (control) {
+      control.updateField(id, { [key]: value });
+    }
   };
 
   const handleRemoveField = (id: string) => {
-    setFields(prev => prev.filter(f => f.id !== id));
+    // Use control API for removes (uncontrolled pattern)
+    const control = pdfRef.current?.getControl();
+    if (control) {
+      control.removeField(id);
+    }
   };
 
   return (
@@ -146,7 +154,6 @@ export function App() {
             src="https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf"
             viewMode="scroll"
             pdfLoaderOptions={pdfLoaderOptions}
-            fields={fields}
             onPageChange={onPageChange}
             onScaleChange={onScaleChange}
             onError={onError}

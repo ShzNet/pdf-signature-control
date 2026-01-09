@@ -53,7 +53,7 @@ export class CanvasLayer {
         if (this.activeRenderPromise) {
             try {
                 await this.activeRenderPromise;
-            } catch (e) {
+            } catch {
                 // Ignore errors from previous cancelled renders
             }
         }

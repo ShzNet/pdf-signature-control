@@ -7,7 +7,7 @@ import { SignatureField } from '../types.js';
  * Common interface for PDF viewing mode strategies.
  */
 export interface IViewModeStrategy {
-    init(container: HTMLElement, pdfDocument: PDFDocumentProxy, eventBus: EventBus, initialScale?: number): Promise<void>;
+    init(container: HTMLElement, pdfDocument: PDFDocumentProxy, eventBus: EventBus, initialScale?: number, pageInfo?: Map<number, { width: number, height: number }>): Promise<void>;
     destroy(): void;
 
     // Scale

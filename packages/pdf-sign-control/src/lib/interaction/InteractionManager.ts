@@ -17,24 +17,38 @@ export class InteractionManager {
     private resizeHandler: ResizeHandler;
     private scale = 1.0;
 
+    private boundHandleMouseMove: (e: MouseEvent) => void;
+    private boundHandleTouchMove: (e: TouchEvent) => void;
+    private boundHandleMouseUp: (e: MouseEvent) => void;
+    private boundHandleTouchEnd: (e: TouchEvent) => void;
+    private boundHandleMouseDown: (e: MouseEvent) => void;
+    private boundHandleTouchStart: (e: TouchEvent) => void;
+
     constructor(container: HTMLElement, callbacks: InteractionCallbacks) {
         this.container = container;
         this.dragHandler = new DragHandler(callbacks.onDragEnd);
         this.resizeHandler = new ResizeHandler(callbacks.onResizeEnd);
+
+        this.boundHandleMouseMove = this.handleMouseMove.bind(this);
+        this.boundHandleTouchMove = this.handleTouchMove.bind(this);
+        this.boundHandleMouseUp = this.handleMouseUp.bind(this);
+        this.boundHandleTouchEnd = this.handleTouchEnd.bind(this);
+        this.boundHandleMouseDown = this.handleMouseDown.bind(this);
+        this.boundHandleTouchStart = this.handleTouchStart.bind(this);
 
         this.init();
     }
 
     private init() {
         // We attach listeners to the container
-        this.container.addEventListener('mousedown', this.handleMouseDown.bind(this));
-        this.container.addEventListener('touchstart', this.handleTouchStart.bind(this));
+        this.container.addEventListener('mousedown', this.boundHandleMouseDown);
+        this.container.addEventListener('touchstart', this.boundHandleTouchStart);
 
-        window.addEventListener('mousemove', this.handleMouseMove.bind(this));
-        window.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+        window.addEventListener('mousemove', this.boundHandleMouseMove);
+        window.addEventListener('touchmove', this.boundHandleTouchMove, { passive: false });
 
-        window.addEventListener('mouseup', this.handleMouseUp.bind(this));
-        window.addEventListener('touchend', this.handleTouchEnd.bind(this));
+        window.addEventListener('mouseup', this.boundHandleMouseUp);
+        window.addEventListener('touchend', this.boundHandleTouchEnd);
     }
 
     setScale(scale: number) {
@@ -78,7 +92,7 @@ export class InteractionManager {
 
             const id = field.dataset.id;
             if (id) {
-                this.dragHandler.startDrag(e, field, id, this.scale);
+                this.dragHandler.startDrag(e, field, id);
             }
         }
     }
@@ -93,23 +107,32 @@ export class InteractionManager {
 
     private handleTouchMove(e: TouchEvent) {
         if (this.dragHandler.isActive()) {
+            // Prevent scrolling while dragging
+            if (e.cancelable) e.preventDefault();
             this.dragHandler.handleMove(e);
         } else if (this.resizeHandler.isActive()) {
+            if (e.cancelable) e.preventDefault();
             this.resizeHandler.handleMove(e);
         }
     }
 
     private handleMouseUp(e: MouseEvent) {
         this.dragHandler.handleEnd(e);
-        this.resizeHandler.handleEnd(e);
+        this.resizeHandler.handleEnd();
     }
 
     private handleTouchEnd(e: TouchEvent) {
         this.dragHandler.handleEnd(e);
-        this.resizeHandler.handleEnd(e);
+        this.resizeHandler.handleEnd();
     }
 
     destroy() {
-        // TODO: Remove listeners
+        this.container.removeEventListener('mousedown', this.boundHandleMouseDown);
+        this.container.removeEventListener('touchstart', this.boundHandleTouchStart);
+
+        window.removeEventListener('mousemove', this.boundHandleMouseMove);
+        window.removeEventListener('touchmove', this.boundHandleTouchMove);
+        window.removeEventListener('mouseup', this.boundHandleMouseUp);
+        window.removeEventListener('touchend', this.boundHandleTouchEnd);
     }
 }

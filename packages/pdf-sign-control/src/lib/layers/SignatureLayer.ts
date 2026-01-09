@@ -1,6 +1,6 @@
 import { SignatureField } from '../types.js';
 import { EventBus } from '../utils/EventBus.js';
-import { InteractionManager, DragEventData, ResizeEventData } from '../interaction/InteractionManager.js';
+import { InteractionManager, ResizeEventData } from '../interaction/InteractionManager.js';
 
 export class SignatureLayer {
     private element: HTMLElement;
@@ -10,11 +10,15 @@ export class SignatureLayer {
     private pageHeight = 0; // Unscaled PDF page height (Points)
     private eventBus: EventBus;
     private interactionManager: InteractionManager;
+    public readonly id: string;
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
+        this.id = Math.random().toString(36).substring(2, 9);
+
         this.element = document.createElement('div');
         this.element.className = 'signature-layer';
+        this.element.dataset.layerId = this.id;
         this.element.style.position = 'absolute';
         this.element.style.top = '0';
         this.element.style.left = '0';
@@ -34,17 +38,17 @@ export class SignatureLayer {
     }
 
     setFields(fields: SignatureField[]) {
-        // Diffing or full re-render? For simplicity, full re-render for now.
-        // Optimization: track IDs and only add/remove/update.
         this.fields = fields;
         this.render();
     }
 
     setPageDimensions(width: number, height: number, scale: number) {
-        this.pageHeight = height;
-        this.scale = scale;
-        this.interactionManager.setScale(scale);
-        this.updatePositions();
+        if (width > 0 && height > 0) {
+            this.pageHeight = height;
+            this.scale = scale;
+            this.interactionManager.setScale(scale);
+            this.updatePositions();
+        }
     }
 
     setScale(scale: number) {
@@ -296,6 +300,10 @@ export class SignatureLayer {
     }
 
     private updatePositions() {
+        if (this.pageHeight === 0) {
+            return;
+        }
+
         this.fields.forEach(field => {
             const el = this.fieldElements.get(field.id);
             if (el) {
@@ -345,6 +353,7 @@ export class SignatureLayer {
     }
 
     destroy() {
+        this.interactionManager.destroy();
         this.element.remove();
         this.fieldElements.clear();
         this.fields = [];
