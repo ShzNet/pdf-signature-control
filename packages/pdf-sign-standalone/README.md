@@ -1,11 +1,26 @@
-# pdf-sign-standalone
+# @shz/pdf-sign-standalone
 
-This library was generated with [Nx](https://nx.dev).
+A bundled version of the PDF Sign Control for usage in Vanilla JS or environments without a bundler.
 
-## Building
+## Usage
 
-Run `nx build pdf-sign-standalone` to build the library.
+Include the script directly or import it:
 
-## Running unit tests
+```html
+<script src="path/to/pdf-sign-standalone.js"></script>
+<link rel="stylesheet" href="path/to/pdf-sign-standalone.css">
 
-Run `nx test pdf-sign-standalone` to execute the unit tests via [Vitest](https://vitest.dev/).
+<div id="pdf-root" style="width: 100%; height: 600px;"></div>
+
+<script>
+  // The global variable `PdfSignStandalone` is available
+  const container = document.getElementById('pdf-root');
+  const app = new PdfSignStandalone.PdfSignControl(container);
+  
+  app.init('https://example.com/sample.pdf');
+</script>
+```
+
+## Versioning
+
+This package follows the version of `@shz/pdf-sign-control`.
