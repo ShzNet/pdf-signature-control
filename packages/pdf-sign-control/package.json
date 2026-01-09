@@ -1,6 +1,6 @@
 {
   "name": "@shznet/pdf-sign-control",
-  "version": "0.2.3",
+  "version": "1.0.0",
   "description": "Core PDF signing logic for @shznet/pdf-sign",
   "license": "MIT",
   "repository": {

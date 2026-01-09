@@ -1,3 +1,18 @@
+# 1.0.0 (2026-01-09)
+
+### 🚀 Features
+
+- ⚠️  transition to 1-based page numbering for public API and models ([30e3ba8](https://github.com/ShzNet/pdf-signature-control/commit/30e3ba8))
+
+### ⚠️  Breaking Changes
+
+- transition to 1-based page numbering for public API and models  ([30e3ba8](https://github.com/ShzNet/pdf-signature-control/commit/30e3ba8))
+  Consumers must update `SignatureField` definitions to use `pageNumber` (1-based) instead of `pageIndex`.
+
+### ❤️ Thank You
+
+- Chien Tran
+
 ## 0.2.3 (2026-01-09)
 
 ### 🚀 Features

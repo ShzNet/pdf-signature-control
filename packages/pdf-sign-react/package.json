@@ -1,6 +1,6 @@
 {
   "name": "@shznet/pdf-sign-react",
-  "version": "0.2.3",
+  "version": "1.0.0",
   "description": "React wrapper for @shznet/pdf-sign-control",
   "license": "MIT",
   "repository": {
