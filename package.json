@@ -2,6 +2,15 @@
   "name": "@shznet/source",
   "version": "0.0.0",
   "license": "MIT",
+  "author": "Chien Tran <chientranit@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ShzNet/pdf-signature-control.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ShzNet/pdf-signature-control/issues"
+  },
+  "homepage": "https://github.com/ShzNet/pdf-signature-control#readme",
   "scripts": {
     "build": "nx run-many -t build",
     "start:vanilla": "nx serve demo-vanilla",

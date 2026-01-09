@@ -1,10 +1,23 @@
 {
   "name": "@shznet/pdf-sign-angular",
   "version": "0.2.0",
+  "description": "Angular wrapper for @shznet/pdf-sign-control",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ShzNet/pdf-signature-control.git"
+  },
+  "author": "Chien Tran <chientranit@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/ShzNet/pdf-signature-control/issues"
+  },
+  "homepage": "https://github.com/ShzNet/pdf-signature-control#readme",
+  "dependencies": {
+    "@shznet/pdf-sign-control": "*"
+  },
   "peerDependencies": {
     "@angular/common": "^21.0.0",
-    "@angular/core": "^21.0.0",
-    "@shznet/pdf-sign-control": "*"
+    "@angular/core": "^21.0.0"
   },
   "publishConfig": {
     "access": "public"

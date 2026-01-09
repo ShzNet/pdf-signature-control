@@ -1,6 +1,17 @@
 {
   "name": "@shznet/pdf-sign-control",
   "version": "0.2.0",
+  "description": "Core PDF signing logic for @shznet/pdf-sign",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ShzNet/pdf-signature-control.git"
+  },
+  "author": "Chien Tran <chientranit@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/ShzNet/pdf-signature-control/issues"
+  },
+  "homepage": "https://github.com/ShzNet/pdf-signature-control#readme",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

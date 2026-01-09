@@ -5,15 +5,18 @@ React component wrapper for `@shznet/pdf-sign-control`.
 ## Installation
 
 ```bash
-npm install @shznet/pdf-sign-react @shznet/pdf-sign-control pdfjs-dist
+npm install @shznet/pdf-sign-react pdfjs-dist
 ```
 
 ## Usage
 
 ```tsx
-import { PdfSignReact } from '@shznet/pdf-sign-react';
+import { PdfSignReact, PdfSignReactRef } from '@shznet/pdf-sign-react';
+import { useRef } from 'react';
 
 export function App() {
+  const controlRef = useRef<PdfSignReactRef>(null);
+
   const handlePdfLoaded = () => {
     console.log('PDF Loaded!');
   };
@@ -21,9 +24,11 @@ export function App() {
   return (
     <div style={{ height: '100vh' }}>
       <PdfSignReact 
-        fileUrl="https://example.com/doc.pdf"
+        ref={controlRef}
+        src="https://example.com/doc.pdf"
+        viewMode="scroll"
+        zoomable={true}
         onLoad={handlePdfLoaded}
-        primaryColor="#ff0000"
       />
     </div>
   );
@@ -34,8 +39,11 @@ export function App() {
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `fileUrl` | `string` | URL of the PDF to display. |
-| `scale` | `number` | Initial zoom scale. |
-| `viewMode` | `'single-page' \| 'scroll'` | View mode configuration. |
-| `primaryColor` | `string` | Color theme for interactive elements. |
-| `onLoad` | `() => void` | Callback when PDF is fully loaded. |
+| `src` | `string \| Uint8Array \| ArrayBuffer` | PDF source to load. |
+| `viewMode` | `'single' \| 'scroll'` | Initial view mode. |
+| `zoomable` | `boolean` | Enable/disable gesture zooming (default: true). |
+| `fields` | `SignatureField[]` | Initial fields to render. |
+| `onLoad` | `() => void` | Callback when PDF is loaded. |
+| `onPageChange` | `(page: number, total: number) => void` | Callback when page changes. |
+| `onScaleChange` | `(scale: number) => void` | Callback when zoom level changes. |
+| `onFieldsChange` | `(fields: SignatureField[]) => void` | Callback when fields are added/removed/updated. |
