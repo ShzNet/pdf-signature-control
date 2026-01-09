@@ -49,6 +49,15 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint"
+    },
+    "publish": {
+      "command": "npm publish",
+      "options": {
+        "cwd": "dist/packages/pdf-sign-angular"
+      },
+      "dependsOn": [
+        "build"
+      ]
     }
   }
 }

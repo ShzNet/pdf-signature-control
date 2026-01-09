@@ -1,0 +1,17 @@
+{
+    "name": "@shz/pdf-sign-standalone",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "library",
+    "sourceRoot": "packages/pdf-sign-standalone/src",
+    "targets": {
+        "publish": {
+            "command": "npm publish",
+            "options": {
+                "cwd": "packages/pdf-sign-standalone"
+            },
+            "dependsOn": [
+                "build"
+            ]
+        }
+    }
+}

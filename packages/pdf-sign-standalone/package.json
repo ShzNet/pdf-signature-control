@@ -18,5 +18,10 @@
     "dist",
     "!**/*.tsbuildinfo"
   ],
-  "dependencies": {}
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@shz/pdf-sign-control": "^0.0.1"
+  }
 }

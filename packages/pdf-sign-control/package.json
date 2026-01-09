@@ -18,5 +18,10 @@
     "dist",
     "!**/*.tsbuildinfo"
   ],
-  "dependencies": {}
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "pdfjs-dist": "^5.4.530"
+  }
 }
