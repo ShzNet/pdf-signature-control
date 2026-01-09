@@ -1,3 +1,19 @@
+## 0.2.3 (2026-01-09)
+
+### 🚀 Features
+
+- ⚠️  **core): add getPageDimensions API feat(react): expose field management and dimension APIs feat(angular:** add two-way page binding and dimensions API ([f273e8b](https://github.com/ShzNet/pdf-signature-control/commit/f273e8b))
+
+### ⚠️  Breaking Changes
+
+- **core): add getPageDimensions API feat(react): expose field management and dimension APIs feat(angular:** add two-way page binding and dimensions API  ([f273e8b](https://github.com/ShzNet/pdf-signature-control/commit/f273e8b))
+  `pageChange` now emits number only (use `pageInfo` for details)
+  - Docs: Update READMEs with new API usage and examples
+
+### ❤️ Thank You
+
+- Chien Tran
+
 ## 0.2.2 (2026-01-09)
 
 ### 🚀 Features
