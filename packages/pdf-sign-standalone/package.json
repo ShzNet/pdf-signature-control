@@ -1,6 +1,6 @@
 {
   "name": "@shznet/pdf-sign-standalone",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Standalone bundle for @shznet/pdf-sign-control",
   "license": "MIT",
   "repository": {

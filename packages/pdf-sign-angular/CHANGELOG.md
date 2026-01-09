@@ -1,3 +1,13 @@
+## 0.2.2 (2026-01-09)
+
+### 🚀 Features
+
+- **core:** implement print functionality with signature support ([c8c8450](https://github.com/ShzNet/pdf-signature-control/commit/c8c8450))
+
+### ❤️ Thank You
+
+- Chien Tran
+
 ## 0.2.1 (2026-01-09)
 
 ### 🩹 Fixes
