@@ -1,3 +1,33 @@
+## 0.2.0 (2026-01-09)
+
+### 🚀 Features
+
+- setup project structure and initial libraries ([faec1b4](https://github.com/ShzNet/pdf-signature-control/commit/faec1b4))
+- setup framework demos and remove Vue support ([358dca5](https://github.com/ShzNet/pdf-signature-control/commit/358dca5))
+- setup framework demos and remove Vue support ([5400fc4](https://github.com/ShzNet/pdf-signature-control/commit/5400fc4))
+- implement field events and sync vanilla demo ([3baabb5](https://github.com/ShzNet/pdf-signature-control/commit/3baabb5))
+- **demo:** enhance responsive layout and functionality parity ([06f7cce](https://github.com/ShzNet/pdf-signature-control/commit/06f7cce))
+- **pdf-sign-control:** add view mode strategies (single/scroll) and refactor folder structure ([be53564](https://github.com/ShzNet/pdf-signature-control/commit/be53564))
+- **pdf-sign-control:** add gesture zoom with optimized progressive rendering ([03073f4](https://github.com/ShzNet/pdf-signature-control/commit/03073f4))
+- **signature:** redesign modal UI and refactor generator for consistent rendering ([ff872dc](https://github.com/ShzNet/pdf-signature-control/commit/ff872dc))
+- **ui:** redesign demo layout and optimize zoom functionality ([5e0b4c6](https://github.com/ShzNet/pdf-signature-control/commit/5e0b4c6))
+
+### 🩹 Fixes
+
+- update release workflow flags ([3bc5eed](https://github.com/ShzNet/pdf-signature-control/commit/3bc5eed))
+- correct release configuration for angular package ([1f0aa6e](https://github.com/ShzNet/pdf-signature-control/commit/1f0aa6e))
+- force trigger npm publish ([554cef7](https://github.com/ShzNet/pdf-signature-control/commit/554cef7))
+- relax dependencies and enable silent release ([7aaa7a0](https://github.com/ShzNet/pdf-signature-control/commit/7aaa7a0))
+- allow release fallback to disk version ([af2de84](https://github.com/ShzNet/pdf-signature-control/commit/af2de84))
+- use first-release flag ([695bba2](https://github.com/ShzNet/pdf-signature-control/commit/695bba2))
+- add build step to release workflow ([c2301af](https://github.com/ShzNet/pdf-signature-control/commit/c2301af))
+- **react:** resolve field visibility and sync issues ([5ea9adb](https://github.com/ShzNet/pdf-signature-control/commit/5ea9adb))
+- **react:** resolve field visibility and sync issues ([6c1821a](https://github.com/ShzNet/pdf-signature-control/commit/6c1821a))
+
+### ❤️ Thank You
+
+- Chien Tran
+
 ## 0.0.2 (2026-01-09)
 
 ### 🩹 Fixes
