@@ -39,7 +39,7 @@ Use the component in your template:
 @ViewChild(PdfSignAngularComponent) pdfSign!: PdfSignAngularComponent;
 
 print() {
-  this.pdfSign.print({ withSignatures: true });
+  this.pdfSign.print();
 }
 ```
 

@@ -36,7 +36,7 @@ export function App() {
 ```
 
 ```tsx
-<button onClick={() => controlRef.current?.print({ withSignatures: true })}>
+<button onClick={() => controlRef.current?.print()}>
   Print PDF
 </button>
 ```
