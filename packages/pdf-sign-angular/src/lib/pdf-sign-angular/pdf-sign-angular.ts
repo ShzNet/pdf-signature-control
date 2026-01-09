@@ -16,6 +16,9 @@ export class PdfSignAngularComponent implements OnInit, OnDestroy, OnChanges {
   /** PDF source URL or ArrayBuffer - auto-loads when provided */
   @Input() src?: string | Uint8Array | ArrayBuffer;
 
+  /** Current page number (1-based) - supports two-way binding with [(page)] */
+  @Input() page?: number;
+
   /** Initial view mode: 'scroll' or 'single' */
   @Input() viewMode?: ViewMode;
 
@@ -31,8 +34,11 @@ export class PdfSignAngularComponent implements OnInit, OnDestroy, OnChanges {
   /** Emitted when PDF is loaded */
   @Output() loaded = new EventEmitter<void>();
 
-  /** Emitted when page changes */
-  @Output() pageChange = new EventEmitter<{ page: number; total: number }>();
+  /** Emitted when page changes - emits page number for two-way binding */
+  @Output() pageChange = new EventEmitter<number>();
+
+  /** Emitted when page changes with full info */
+  @Output() pageInfo = new EventEmitter<{ page: number; total: number }>();
 
   /** Emitted when scale changes */
   @Output() scaleChange = new EventEmitter<{ scale: number }>();
@@ -65,7 +71,13 @@ export class PdfSignAngularComponent implements OnInit, OnDestroy, OnChanges {
 
       // Setup event listeners
       this.control.on('page:change', (data: { page: number; total: number }) => {
-        this.pageChange.emit(data);
+        // Emit full info
+        this.pageInfo.emit(data);
+        // Emit page number for two-way binding
+        if (this.page !== data.page) {
+          this.page = data.page;
+          this.pageChange.emit(data.page);
+        }
       });
 
       this.control.on('scale:change', (data: { scale: number }) => {
@@ -98,6 +110,12 @@ export class PdfSignAngularComponent implements OnInit, OnDestroy, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['src'] && !changes['src'].firstChange && this.src) {
       this.loadPdf(this.src);
+    }
+    if (changes['page'] && !changes['page'].firstChange && this.page !== undefined) {
+      const currentPage = this.control?.getCurrentPage();
+      if (currentPage !== this.page) {
+        this.control?.goToPage(this.page);
+      }
     }
     if (changes['viewMode'] && !changes['viewMode'].firstChange && this.viewMode) {
       this.control?.setViewMode(this.viewMode);
@@ -184,6 +202,11 @@ export class PdfSignAngularComponent implements OnInit, OnDestroy, OnChanges {
   /** Print the PDF */
   print(options?: { withSignatures?: boolean }): Promise<void> {
     return this.control?.print(options) ?? Promise.resolve();
+  }
+
+  /** Get dimensions of a specific page in PDF points */
+  async getPageDimensions(pageIndex: number): Promise<{ width: number; height: number } | null> {
+    return this.control?.getPageDimensions(pageIndex) ?? null;
   }
 
   // Field Management Wrappers

@@ -23,6 +23,14 @@ export interface ScaleChangeEvent {
 }
 
 /**
+ * Page dimensions in PDF points
+ */
+export interface PageDimensions {
+    width: number;
+    height: number;
+}
+
+/**
  * Options for PdfLoader
  */
 export interface PdfLoaderOptions {

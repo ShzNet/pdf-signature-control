@@ -163,6 +163,42 @@ export class PdfViewer {
         return this.currentScale;
     }
 
+    /**
+     * Get dimensions of a specific page in PDF points
+     * @param pageIndex - Zero-based page index
+     * @returns Page dimensions { width: number, height: number } or null if page doesn't exist
+     */
+    async getPageDimensions(pageIndex: number): Promise<{ width: number; height: number } | null> {
+        if (!this.pdfDocument) {
+            throw new Error('PDF not loaded');
+        }
+
+        if (pageIndex < 0 || pageIndex >= this.pdfDocument.numPages) {
+            return null;
+        }
+
+        // Check cache first
+        const cached = this.pageInfo.get(pageIndex);
+        if (cached) {
+            return { width: cached.width, height: cached.height };
+        }
+
+        // Fetch if not in cache
+        try {
+            const page = await this.pdfDocument.getPage(pageIndex + 1); // PDF.js uses 1-based
+            const viewport = page.getViewport({ scale: 1.0 }); // Get unscaled dimensions
+            const dimensions = {
+                width: viewport.width,
+                height: viewport.height
+            };
+            this.pageInfo.set(pageIndex, dimensions);
+            return dimensions;
+        } catch (error) {
+            console.error(`Failed to get dimensions for page ${pageIndex}:`, error);
+            return null;
+        }
+    }
+
     // Field Management
 
     private fields: SignatureField[] = [];

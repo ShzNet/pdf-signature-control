@@ -11,8 +11,9 @@ export function App() {
   const pdfRef = useRef<PdfSignReactRef>(null);
 
   // App State
-  const [pageInfo, setPageInfo] = useState('1 / ?');
-  const [scale, setScale] = useState(100);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [scale, setScale] = useState(1.0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [fields, setFields] = useState<SignatureField[]>([]);
 
@@ -37,8 +38,13 @@ export function App() {
     cMapPacked: true,
   }), []);
 
-  const onPageChange = useCallback((page: number, total: number) => setPageInfo(`${page} / ${total}`), []);
-  const onScaleChange = useCallback((s: number) => setScale(Math.round(s * 100)), []);
+  const onPageChange = useCallback((page: number, total: number) => {
+    setCurrentPage(page);
+    setTotalPages(total);
+    // Sync new field page with current page
+    setNewField(prev => ({ ...prev, page }));
+  }, []);
+  const onScaleChange = useCallback((s: number) => setScale(s), []);
   const onError = useCallback((err: Error) => console.error('PDF Error:', err), []);
   const onFieldsChange = useCallback((newFields: SignatureField[]) => setFields([...newFields]), []);
 
@@ -87,6 +93,16 @@ export function App() {
 
   const handleInputChange = (key: keyof NewFieldState, value: any) => {
     setNewField(prev => ({ ...prev, [key]: value }));
+
+    // If changing the target page for new field, also navigate to that page
+    if (key === 'page') {
+      const pageNum = Number(value);
+      if (!isNaN(pageNum) && pageNum >= 1 && pdfRef.current) {
+        // We don't have easy access to totalPages here unless we use state or ref check
+        // But setCurrentPage will trigger the useEffect in PdfSignReact which calls goToPage
+        setCurrentPage(pageNum);
+      }
+    }
   };
 
   const handleUpdateField = (id: string, key: 'draggable' | 'resizable', value: boolean) => {
@@ -123,16 +139,32 @@ export function App() {
         <div className="toolbar">
           <div className="control-group">
             <button onClick={() => pdfRef.current?.previousPage()} title="Previous Page">◀</button>
-            <span id="page-info" style={{ minWidth: '80px', textAlign: 'center' }}>{pageInfo}</span>
+            <button onClick={() => pdfRef.current?.previousPage()} title="Previous Page">◀</button>
+            <div className="page-input-group">
+              <input
+                type="number"
+                min={1}
+                max={totalPages}
+                value={currentPage}
+                onChange={(e) => {
+                  const page = parseInt(e.target.value);
+                  if (page >= 1 && page <= totalPages) {
+                    setCurrentPage(page);
+                  }
+                }}
+                style={{ width: '50px', textAlign: 'center' }}
+              />
+              <span> / {totalPages}</span>
+            </div>
             <button onClick={() => pdfRef.current?.nextPage()} title="Next Page">▶</button>
           </div>
 
           <div className="divider"></div>
 
           <div className="control-group">
-            <button onClick={() => setScale(s => Math.max(25, s - 25))} title="Zoom Out">−</button>
-            <span id="zoom-info" style={{ minWidth: '50px', textAlign: 'center' }}>{scale}%</span>
-            <button onClick={() => setScale(s => Math.min(500, s + 25))} title="Zoom In">+</button>
+            <button onClick={() => setScale(s => Math.max(0.25, Number((s - 0.25).toFixed(2))))} title="Zoom Out">−</button>
+            <span id="zoom-info" style={{ minWidth: '50px', textAlign: 'center' }}>{Math.round(scale * 100)}%</span>
+            <button onClick={() => setScale(s => Math.min(5.0, Number((s + 0.25).toFixed(2))))} title="Zoom In">+</button>
           </div>
 
           <div className="divider"></div>
@@ -156,7 +188,8 @@ export function App() {
             ref={pdfRef}
             src="https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf"
             viewMode="scroll"
-            scale={scale / 100}
+            page={currentPage}
+            scale={scale}
             pdfLoaderOptions={pdfLoaderOptions}
             onPageChange={onPageChange}
             onScaleChange={onScaleChange}

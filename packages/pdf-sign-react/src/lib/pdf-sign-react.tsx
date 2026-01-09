@@ -23,15 +23,26 @@ export interface PdfSignReactRef {
   /** Set view mode */
   setViewMode(mode: ViewMode): Promise<void>;
   /** Get current view mode */
-  /** Get current view mode */
   getViewMode(): ViewMode;
   /** Print the PDF */
   print(options?: { withSignatures?: boolean }): Promise<void>;
+  /** Get dimensions of a specific page in PDF points */
+  getPageDimensions(pageIndex: number): Promise<{ width: number; height: number } | null>;
+  /** Add a signature field */
+  addField(field: SignatureField): Promise<void>;
+  /** Remove a signature field by ID */
+  removeField(fieldId: string): void;
+  /** Update a signature field */
+  updateField(fieldId: string, updates: Partial<SignatureField>): void;
+  /** Get all signature fields */
+  getFields(): SignatureField[];
 }
 
 export interface PdfSignReactProps {
   /** PDF source URL or ArrayBuffer - auto-loads when provided */
   src?: string | Uint8Array | ArrayBuffer;
+  /** Initial page number */
+  page?: number;
   /** Initial view mode: 'scroll' or 'single' */
   viewMode?: ViewMode;
   /** Current zoom scale */
@@ -97,6 +108,26 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
         await controlRef.current.print(options);
       }
     },
+    getPageDimensions: async (pageIndex) => {
+      if (controlRef.current) {
+        return await controlRef.current.getPageDimensions(pageIndex);
+      }
+      return null;
+    },
+    addField: async (field) => {
+      if (controlRef.current) {
+        await controlRef.current.addField(field);
+      }
+    },
+    removeField: (fieldId) => {
+      controlRef.current?.removeField(fieldId);
+    },
+    updateField: (fieldId, updates) => {
+      controlRef.current?.updateField(fieldId, updates);
+    },
+    getFields: () => {
+      return controlRef.current?.getFields() ?? [];
+    },
   }));
 
   // Keep track of latest props for event handlers to avoid stale closures
@@ -148,6 +179,16 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
         .catch((error) => props.onError?.(error));
     }
   }, [props.src]);
+
+  // Handle page changes
+  useEffect(() => {
+    if (controlRef.current && props.page !== undefined) {
+      const currentPage = controlRef.current.getCurrentPage();
+      if (currentPage !== props.page) {
+        controlRef.current.goToPage(props.page);
+      }
+    }
+  }, [props.page]);
 
   // Handle viewMode changes
   useEffect(() => {

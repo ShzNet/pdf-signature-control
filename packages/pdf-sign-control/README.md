@@ -42,22 +42,89 @@ pdfControl.on('fields:change', (fields) => {
 
 ## API
 
-### `load(source: string | Uint8Array | ArrayBuffer): Promise<void>`
+### Document Loading
+
+#### `load(source: string | Uint8Array | ArrayBuffer): Promise<void>`
 Loads and renders the PDF from the given URL or buffer.
 
-### `addField(field: SignatureField): Promise<void>`
-Adds a new signature field to the document.
+### View Mode
 
-### `setViewMode(mode: 'single' | 'scroll'): Promise<void>`
+#### `setViewMode(mode: 'single' | 'scroll'): Promise<void>`
 Switches between single page view and continuous scroll view.
 
-### `setScale(scale: number)`
+#### `getViewMode(): ViewMode`
+Returns the current view mode.
+
+### Page Navigation
+
+#### `goToPage(page: number): void`
+Navigate to a specific page (1-based index).
+
+#### `getCurrentPage(): number`
+Get the current page number (1-based).
+
+#### `getTotalPages(): number`
+Get total number of pages in the document.
+
+#### `nextPage(): void`
+Navigate to the next page.
+
+#### `previousPage(): void`
+Navigate to the previous page.
+
+#### `getPageDimensions(pageIndex: number): Promise<{ width: number; height: number } | null>`
+Get dimensions of a specific page in PDF points (unscaled).
+
+**Parameters:**
+- `pageIndex`: Zero-based page index
+
+**Returns:** Page dimensions `{ width, height }` in PDF points, or `null` if the page doesn't exist.
+
+**Example:**
+```typescript
+const dims = await pdfControl.getPageDimensions(0); // First page
+console.log(`Page dimensions: ${dims.width} x ${dims.height} points`);
+```
+
+### Zoom
+
+#### `setScale(scale: number): void`
 Controls the zoom level of the document.
 
-### `getFields(): SignatureField[]`
+#### `getScale(): number`
+Get the current zoom scale.
+
+### Field Management
+
+#### `addField(field: SignatureField): Promise<void>`
+Adds a new signature field to the document.
+
+#### `removeField(fieldId: string): void`
+Removes a field by its ID.
+
+#### `updateField(fieldId: string, updates: Partial<SignatureField>): void`
+Updates a field's properties.
+
+#### `getFields(): SignatureField[]`
 Returns the current list of fields.
 
-### `print(options?: { withSignatures?: boolean }): Promise<void>`
+#### `setFields(fields: SignatureField[]): void`
+Replace all fields with a new set.
+
+### Events
+
+#### `on(event: string, handler: Function): void`
+Subscribe to events:
+- `page:change`: Fired when page changes - `(data: { page: number, total: number }) => void`
+- `scale:change`: Fired when zoom changes - `(data: { scale: number }) => void`
+- `field:add`: Fired when a field is added - `(field: SignatureField) => void`
+- `field:remove`: Fired when a field is removed - `(data: { fieldId: string }) => void`
+- `field:update`: Fired when a field is updated - `(data: { fieldId: string, updates: Partial<SignatureField> }) => void`
+- `fields:change`: Fired when any field changes - `(fields: SignatureField[]) => void`
+
+### Printing
+
+#### `print(options?: { withSignatures?: boolean }): Promise<void>`
 Prints the current document. Default is printing without signatures.
 
 ## License

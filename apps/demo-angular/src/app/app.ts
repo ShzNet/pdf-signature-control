@@ -23,6 +23,7 @@ export class App {
   pdfUrl = 'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf';
   viewMode: ViewMode = 'scroll';
 
+  currentPage = 1; // Two-way bound to PDF component
   pageInfo = '1 / ?';
   zoomInfo = '100%';
   currentDate = new Date().toLocaleDateString();
@@ -95,8 +96,9 @@ export class App {
     console.error('PDF Error:', error);
   }
 
-  onPageChange(data: { page: number; total: number }) {
+  onPageInfo(data: { page: number; total: number }) {
     this.pageInfo = `${data.page} / ${data.total}`;
+    // currentPage is automatically updated via two-way binding
   }
 
   onScaleChange(data: { scale: number }) {
