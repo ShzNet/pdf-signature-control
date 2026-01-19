@@ -1,3 +1,13 @@
+## 1.0.1 (2026-01-19)
+
+### 🚀 Features
+
+- **pdf-sign:** enhance selection handling and add clearFields API ([4213377](https://github.com/ShzNet/pdf-signature-control/commit/4213377))
+
+### ❤️ Thank You
+
+- Chien Tran
+
 # 1.0.0 (2026-01-09)
 
 ### 🚀 Features
