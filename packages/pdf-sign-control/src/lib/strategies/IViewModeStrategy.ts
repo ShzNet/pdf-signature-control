@@ -23,6 +23,7 @@ export interface IViewModeStrategy {
 
     // Field Management
     setFields(fields: SignatureField[]): void;
+    selectField(fieldId: string | null): void;
 
     // Optional: targeted updates for performance
     addField?(field: SignatureField): void;

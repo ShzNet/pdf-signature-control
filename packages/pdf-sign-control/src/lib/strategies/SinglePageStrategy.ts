@@ -40,7 +40,7 @@ export class SinglePageStrategy implements IViewModeStrategy {
         this.container.style.overflow = 'auto';
         this.container.style.display = 'flex';
         this.container.style.flexDirection = 'column';
-        this.container.style.alignItems = 'center';
+        this.container.style.alignItems = '';
         this.container.style.padding = '20px';
 
         this.pageContainer = document.createElement('div');
@@ -112,6 +112,25 @@ export class SinglePageStrategy implements IViewModeStrategy {
     }
 
     setScale(scale: number): void {
+        const oldScale = this.scale;
+        const newScale = scale;
+
+        // 1. Calculate center point relative to the content (scroll + viewport center)
+        // We use the pageView or pageContainer to get the reliable content dimensions/offsets if needed,
+        // but for SinglePage with flex centering `margin: auto`, simple ratio on scroll position + viewport center works well.
+        const container = this.container;
+        const clientWidth = container.clientWidth;
+        const clientHeight = container.clientHeight;
+
+        const scrollLeft = container.scrollLeft;
+        const scrollTop = container.scrollTop;
+
+        const centerX = scrollLeft + clientWidth / 2;
+        const centerY = scrollTop + clientHeight / 2;
+
+        // Ratio of new scale to old scale
+        const ratio = newScale / oldScale;
+
         this.scale = scale;
 
         // Immediate: low-quality preview for responsiveness
@@ -119,6 +138,21 @@ export class SinglePageStrategy implements IViewModeStrategy {
             this.pageView.updateScalePreview(scale);
         }
         this.eventBus.emit('scale:change', { scale });
+
+        // 2. Adjust scroll position to keep the center point stable
+        // New Center = Old Center * Ratio
+        // New Scroll = New Center - Viewport Center
+
+        // We need to wait for layout update roughly? 
+        // Since we update styles synchronously in updateScalePreview, scrollWidth/Height should update reasonably fast.
+        // However, standard DOM updates might be async. 
+        // In this case, setting scroll immediately usually works if dimensions are updated synchronously via style.
+
+        const newScrollLeft = centerX * ratio - clientWidth / 2;
+        const newScrollTop = centerY * ratio - clientHeight / 2;
+
+        container.scrollLeft = newScrollLeft;
+        container.scrollTop = newScrollTop;
 
         // Debounced: full quality render after user stops zooming
         if (this.zoomTimeout) {
@@ -142,6 +176,10 @@ export class SinglePageStrategy implements IViewModeStrategy {
             const pageFields = this.fields.filter(f => f.pageNumber === this.currentPage);
             this.pageView.setFields(pageFields);
         }
+    }
+
+    selectField(fieldId: string | null): void {
+        this.pageView?.selectField(fieldId);
     }
 
     destroy(): void {

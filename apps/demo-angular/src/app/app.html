@@ -38,14 +38,15 @@
 
   <div class="pdf-container">
     <lib-pdf-sign-angular [src]="pdfUrl" [viewMode]="viewMode" [pdfLoaderOptions]="pdfLoaderOptions" [fields]="fields"
-      [(page)]="currentPage"
-      (ready)="onControlReady($event)" (pageInfo)="onPageInfo($event)" (scaleChange)="onScaleChange($event)"
-      (fieldsChange)="onFieldsChange($event)" (error)="onError($event)"
+      [(page)]="currentPage" (ready)="onControlReady($event)" (pageInfo)="onPageInfo($event)"
+      (scaleChange)="onScaleChange($event)" (fieldsChange)="onFieldsChange($event)"
+      (selectionChange)="onSelectionChange($event)" (error)="onError($event)"
       style="width: 100%; height: 100%; display: block;"></lib-pdf-sign-angular>
   </div>
 </main>
 
-<app-right-panel class="right-panel" [fields]="fields" (remove)="removeField($event)" (update)="refreshFields()">
+<app-right-panel class="right-panel" [fields]="fields" (remove)="removeField($event)" (update)="refreshFields()"
+  (clearAll)="onClearAll()">
 </app-right-panel>
 
 <app-signature-modal [isOpen]="isModalOpen" (close)="closeSignatureModal()" (save)="onSignatureSave($event)">

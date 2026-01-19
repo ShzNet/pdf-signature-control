@@ -124,6 +124,11 @@ if (app) {
     rightPanel.updateFields(fields);
   });
 
+  control.on('field:selection-change', (data: { field: any }) => {
+    console.log('Selection Changed:', data.field);
+  });
+
+
   // --- 3. Component Wiring ---
 
   // Connect Left Panel (Add Field)
@@ -132,7 +137,7 @@ if (app) {
       const fieldId = `field-${Date.now()}`;
       const field = {
         id: fieldId,
-        pageIndex: data.page - 1,
+        pageNumber: data.page,
         rect: { x: data.x, y: data.y, width: data.width, height: data.height },
         type: data.type,
         content: data.content,
@@ -179,6 +184,9 @@ if (app) {
       } else {
         console.warn('updateField not implemented on control facade');
       }
+    },
+    () => {
+      control.clearFields();
     }
   );
 

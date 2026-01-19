@@ -57,6 +57,7 @@ export function App() {
 | `onPageChange` | `(page: number, total: number) => void` | Callback when page changes (enables two-way binding). |
 | `onScaleChange` | `(scale: number) => void` | Callback when zoom level changes. |
 | `onFieldsChange` | `(fields: SignatureField[]) => void` | Callback when fields are modified. |
+| `onSelectionChange` | `(data: { field: SignatureField | null }) => void` | Callback when field selection changes. |
 | `onError` | `(error: Error) => void` | Callback on errors. |
 
 ## Two-Way Binding Example
@@ -141,6 +142,7 @@ await pdfRef.current?.addField({
 pdfRef.current?.removeField('sig1');
 pdfRef.current?.updateField('sig1', { rect: { x: 150, y: 150, width: 200, height: 80 } });
 const fields = pdfRef.current?.getFields();
+pdfRef.current?.clearFields();
 
 // Printing
 await pdfRef.current?.print({ withSignatures: false });

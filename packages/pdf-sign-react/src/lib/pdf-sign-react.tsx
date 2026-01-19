@@ -36,6 +36,8 @@ export interface PdfSignReactRef {
   updateField(fieldId: string, updates: Partial<SignatureField>): void;
   /** Get all signature fields */
   getFields(): SignatureField[];
+  /** Clear all fields */
+  clearFields(): void;
 }
 
 export interface PdfSignReactProps {
@@ -77,6 +79,8 @@ export interface PdfSignReactProps {
   onFieldUpdate?: (data: { fieldId: string, updates: Partial<SignatureField> }) => void;
   /** Callback when any field changes (add/remove/update) */
   onFieldsChange?: (fields: SignatureField[]) => void;
+  /** Callback when field selection changes */
+  onSelectionChange?: (data: { field: SignatureField | null }) => void;
 }
 
 export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((props, ref) => {
@@ -128,6 +132,9 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
     getFields: () => {
       return controlRef.current?.getFields() ?? [];
     },
+    clearFields: () => {
+      controlRef.current?.clearFields();
+    },
   }));
 
   // Keep track of latest props for event handlers to avoid stale closures
@@ -160,6 +167,7 @@ export const PdfSignReact = forwardRef<PdfSignReactRef, PdfSignReactProps>((prop
     controlRef.current.on('field:remove', (data: { fieldId: string }) => propsRef.current.onFieldRemove?.(data));
     controlRef.current.on('field:update', (data: { fieldId: string, updates: Partial<SignatureField> }) => propsRef.current.onFieldUpdate?.(data));
     controlRef.current.on('fields:change', (fields: SignatureField[]) => propsRef.current.onFieldsChange?.(fields));
+    controlRef.current.on('field:selection-change', (data: { field: SignatureField | null }) => propsRef.current.onSelectionChange?.(data));
 
     if (props.onReady) {
       props.onReady(controlRef.current);

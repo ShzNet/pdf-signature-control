@@ -100,6 +100,8 @@ export class SignatureLayer {
         });
     }
 
+    private selectedFieldId: string | null = null;
+
     private createFieldElement(field: SignatureField): HTMLElement {
         const div = document.createElement('div');
         div.className = 'sc-signature-field';
@@ -110,8 +112,9 @@ export class SignatureLayer {
         div.style.boxSizing = 'border-box';
 
         // Base styling (can be overridden by field.style)
-        div.style.border = '1px solid #0056b3';
-        div.style.backgroundColor = 'rgba(0, 86, 179, 0.1)';
+        // Default visible border as requested
+        div.style.border = '1px solid #7FA1C3'; // Light blue-ish
+        div.style.backgroundColor = 'rgba(127, 161, 195, 0.1)';
         div.style.cursor = field.draggable !== false ? 'move' : 'default';
 
         // Apply custom styles
@@ -158,6 +161,19 @@ export class SignatureLayer {
             contentDiv.appendChild(img);
         }
 
+        // Selection Trigger
+        div.addEventListener('mousedown', (e) => {
+            // Do NOT stop propagation, so InteractionManager (on parent) receives the event
+            // Use the actual field.id from the object, which matches PdfViewer fields
+            this.eventBus.emit('field:focus', { fieldId: field.id });
+        });
+
+        // Touch support for selection
+        div.addEventListener('touchstart', (e) => {
+            // Do NOT stop propagation
+            this.eventBus.emit('field:focus', { fieldId: field.id });
+        }, { passive: false });
+
         div.appendChild(contentDiv);
 
         // Add Resize Handles if resizable
@@ -170,8 +186,26 @@ export class SignatureLayer {
             this.addDeleteButton(div, field.id);
         }
 
+        // Hover Effects
+        div.addEventListener('mouseenter', () => {
+            if (this.selectedFieldId !== field.id) {
+                this.updateVisuals(div, field, true, false);
+            }
+        });
+
+        div.addEventListener('mouseleave', () => {
+            if (this.selectedFieldId !== field.id) {
+                this.updateVisuals(div, field, false, false);
+            }
+        });
+
         // Initial positioning
         this.updateElementPosition(div, field);
+
+        // Check if this field should be selected initially (e.g. after re-render)
+        if (this.selectedFieldId === field.id) {
+            this.updateVisuals(div, field, true, true);
+        }
 
         return div;
     }
@@ -190,6 +224,9 @@ export class SignatureLayer {
             handle.style.border = '1px solid #0056b3';
             handle.style.zIndex = '2';
             handle.style.boxSizing = 'border-box';
+
+            // Hidden by default, shown when selected
+            handle.style.display = 'none';
 
             const cornerSize = '8px';
             const edgeThick = '6px';
@@ -276,12 +313,8 @@ export class SignatureLayer {
         btn.style.zIndex = '20';
         btn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
 
-        // Visibility Logic
-        btn.style.opacity = '0';
-        btn.style.transition = 'opacity 0.2s';
-
-        container.addEventListener('mouseenter', () => btn.style.opacity = '1');
-        container.addEventListener('mouseleave', () => btn.style.opacity = '0');
+        // Visibility Logic - Manage by toggle
+        btn.style.display = 'none';
 
         btn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -297,6 +330,43 @@ export class SignatureLayer {
         }, { passive: false });
 
         container.appendChild(btn);
+    }
+
+    select(fieldId: string | null) {
+        this.selectedFieldId = fieldId;
+        this.fields.forEach(field => {
+            const el = this.fieldElements.get(field.id);
+            if (!el) return;
+
+            const isSelected = field.id === fieldId;
+            this.updateVisuals(el, field, isSelected, isSelected);
+        });
+    }
+
+    private updateVisuals(el: HTMLElement, field: SignatureField, showControls: boolean, isSelected: boolean) {
+        // Toggle Controls
+        const resizeHandles = el.querySelectorAll('.sc-resize-handle');
+        resizeHandles.forEach(h => (h as HTMLElement).style.display = showControls ? 'block' : 'none');
+
+        const deleteBtn = el.querySelector('.sc-delete-btn') as HTMLElement;
+        if (deleteBtn) {
+            deleteBtn.style.display = showControls ? 'flex' : 'none';
+        }
+
+        // Apply Visual Selection or Hover style
+        if (isSelected) {
+            el.style.border = '1px solid #0056b3';
+            el.style.backgroundColor = 'rgba(0, 86, 179, 0.1)';
+        } else if (showControls) {
+            // Hover state (controls shown but not selected)
+            el.style.border = '1px solid #0056b3'; // Same border as select? or slightly different?
+            // Let's keep it similar to indicate interactivity, maybe lighter bg
+            el.style.backgroundColor = 'rgba(0, 86, 179, 0.05)';
+        } else {
+            // Revert to custom style or default visible style
+            el.style.border = field.style?.border || '1px solid #7FA1C3';
+            el.style.backgroundColor = field.style?.backgroundColor || 'rgba(127, 161, 195, 0.1)';
+        }
     }
 
     private updatePositions() {

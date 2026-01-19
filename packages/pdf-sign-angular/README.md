@@ -61,6 +61,7 @@ print() {
 -   **(pageInfo)**: `EventEmitter<{ page: number, total: number }>` - Emits detailed page info.
 -   **(scaleChange)**: `EventEmitter<{ scale: number }>` - Emitted on zoom changes.
 -   **(fieldsChange)**: `EventEmitter<SignatureField[]>` - Emitted when fields are modified.
+-   **(selectionChange)**: `EventEmitter<{ field: SignatureField | null }>` - Emitted when field selection changes.
 -   **(error)**: `EventEmitter<Error>` - Emitted on errors.
 
 ## Two-Way Binding Example
@@ -145,6 +146,7 @@ this.pdfComponent.updateField('sig1', {
   rect: { x: 150, y: 150, width: 200, height: 80 } 
 });
 this.pdfComponent.setFields([...newFields]);
+this.pdfComponent.clearFields();
 
 // Printing
 await this.pdfComponent.print({ withSignatures: false });

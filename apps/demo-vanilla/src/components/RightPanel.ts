@@ -3,37 +3,49 @@ export class RightPanel {
     private fieldListContainer: HTMLElement;
     private onRemoveCallback?: (fieldId: string) => void;
     private onUpdateCallback?: (fieldId: string, prop: string, value: any) => void;
+    private onClearAllCallback?: () => void;
 
     constructor() {
         this.container = document.createElement('aside');
         this.container.className = 'right-panel';
         this.container.innerHTML = `
       <div class="panel-section" style="padding: 20px; border-bottom: 1px solid #e9ecef;">
-          <div class="panel-title">Signature Fields</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div class="panel-title" style="margin:0;">Signature Fields</div>
+            <button id="clear-all-btn" style="display:none; font-size:11px; padding:4px 8px; background:#dc3545; color:white; border:none; border-radius:4px; cursor:pointer;">Clear All</button>
+          </div>
           <div class="field-list" style="display: flex; flex-direction: column; gap: 8px;">
               <div style="color:#999; font-size:12px; font-style:italic; padding:10px;">No fields yet</div>
           </div>
       </div>
     `;
         this.fieldListContainer = this.container.querySelector('.field-list') as HTMLElement;
+        this.container.querySelector('#clear-all-btn')!.addEventListener('click', () => {
+            if (this.onClearAllCallback) this.onClearAllCallback();
+        });
     }
 
     get element() {
         return this.container;
     }
 
-    setCallbacks(onRemove: (id: string) => void, onUpdate: (id: string, prop: string, val: any) => void) {
+    setCallbacks(onRemove: (id: string) => void, onUpdate: (id: string, prop: string, val: any) => void, onClearAll: () => void) {
         this.onRemoveCallback = onRemove;
         this.onUpdateCallback = onUpdate;
+        this.onClearAllCallback = onClearAll;
     }
 
     updateFields(fields: any[]) {
         this.fieldListContainer.innerHTML = '';
+        const clearBtn = this.container.querySelector('#clear-all-btn') as HTMLElement;
 
         if (fields.length === 0) {
             this.fieldListContainer.innerHTML = '<div style="color:#999; font-size:12px; font-style:italic; padding:10px;">No fields yet</div>';
+            if (clearBtn) clearBtn.style.display = 'none';
             return;
         }
+
+        if (clearBtn) clearBtn.style.display = 'block';
 
         fields.forEach((field, index) => {
             const item = document.createElement('div');
@@ -42,11 +54,11 @@ export class RightPanel {
             item.style.border = '1px solid #dee2e6';
             item.style.borderRadius = '4px';
             item.style.fontSize = '12px';
-            item.style.cursor = 'default'; // Pointer implies clicking selects it, which we don't handle deeply here yet
+            item.style.cursor = 'default';
             item.style.marginBottom = '5px';
             item.style.background = 'white';
 
-            const pageLabel = `Page ${field.pageIndex + 1}`;
+            const pageLabel = `Page ${field.pageNumber}`;
             const typeLabel = (field.type || 'text').toUpperCase();
             const coords = `x:${Math.round(field.rect.x)}, y:${Math.round(field.rect.y)}`;
 

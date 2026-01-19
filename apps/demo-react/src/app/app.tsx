@@ -42,11 +42,15 @@ export function App() {
     setCurrentPage(page);
     setTotalPages(total);
     // Sync new field page with current page
-    setNewField(prev => ({ ...prev, page }));
+    setNewField(prev => ({ ...prev, page: (page && page > 0) ? page : 1 }));
   }, []);
   const onScaleChange = useCallback((s: number) => setScale(s), []);
   const onError = useCallback((err: Error) => console.error('PDF Error:', err), []);
   const onFieldsChange = useCallback((newFields: SignatureField[]) => setFields([...newFields]), []);
+  const onSelectionChange = useCallback((data: { field: SignatureField | null }) => {
+    console.log('Selection Changed:', data.field);
+  }, []);
+
 
   const handleConfirmSignature = (htmlContent: string) => {
     setNewField(prev => ({ ...prev, content: htmlContent }));
@@ -70,7 +74,7 @@ export function App() {
     const fieldId = `field-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const field: SignatureField = {
       id: fieldId,
-      pageIndex: newField.page - 1,
+      pageNumber: newField.page,
       rect: {
         x: newField.x,
         y: newField.y,
@@ -195,6 +199,7 @@ export function App() {
             onScaleChange={onScaleChange}
             onError={onError}
             onFieldsChange={onFieldsChange}
+            onSelectionChange={onSelectionChange}
           />
         </div>
       </main>
@@ -203,6 +208,7 @@ export function App() {
         fields={fields}
         onRemoveField={handleRemoveField}
         onUpdateField={handleUpdateField}
+        onClearAll={() => pdfRef.current?.clearFields()}
       />
 
       <SignatureModal

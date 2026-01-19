@@ -1,5 +1,5 @@
 
-import { Component, ElementRef, ViewChild, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChanges, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PdfSignControl, PdfSignControlOptions, ViewMode, SignatureField } from '@shznet/pdf-sign-control';
 
@@ -58,7 +58,13 @@ export class PdfSignAngularComponent implements OnInit, OnDestroy, OnChanges {
   /** Emitted when any field changes (add/remove/update) */
   @Output() fieldsChange = new EventEmitter<SignatureField[]>();
 
+  /** Emitted when field selection changes */
+  @Output() selectionChange = new EventEmitter<{ field: SignatureField | null }>();
+
+
   private control: PdfSignControl | null = null;
+
+  constructor(private ngZone: NgZone) { }
 
   ngOnInit() {
     if (this.container) {
@@ -71,31 +77,34 @@ export class PdfSignAngularComponent implements OnInit, OnDestroy, OnChanges {
 
       // Setup event listeners
       this.control.on('page:change', (data: { page: number; total: number }) => {
-        // Emit full info
-        this.pageInfo.emit(data);
-        // Emit page number for two-way binding
-        if (this.page !== data.page) {
-          this.page = data.page;
-          this.pageChange.emit(data.page);
-        }
+        this.ngZone.run(() => {
+          this.pageInfo.emit(data);
+          if (this.page !== data.page) {
+            this.page = data.page;
+            this.pageChange.emit(data.page);
+          }
+        });
       });
 
       this.control.on('scale:change', (data: { scale: number }) => {
-        this.scaleChange.emit(data);
+        this.ngZone.run(() => this.scaleChange.emit(data));
       });
 
       // Field Events
       this.control.on('field:add', (field: SignatureField) => {
-        this.fieldAdd.emit(field);
+        this.ngZone.run(() => this.fieldAdd.emit(field));
       });
       this.control.on('field:remove', (data: { fieldId: string }) => {
-        this.fieldRemove.emit(data);
+        this.ngZone.run(() => this.fieldRemove.emit(data));
       });
       this.control.on('field:update', (data: { fieldId: string, updates: Partial<SignatureField> }) => {
-        this.fieldUpdate.emit(data);
+        this.ngZone.run(() => this.fieldUpdate.emit(data));
       });
       this.control.on('fields:change', (fields: SignatureField[]) => {
-        this.fieldsChange.emit(fields);
+        this.ngZone.run(() => this.fieldsChange.emit(fields));
+      });
+      this.control.on('field:selection-change', (data: { field: SignatureField | null }) => {
+        this.ngZone.run(() => this.selectionChange.emit(data));
       });
 
       this.ready.emit(this.control);
@@ -197,6 +206,11 @@ export class PdfSignAngularComponent implements OnInit, OnDestroy, OnChanges {
   /** Get current view mode */
   getViewMode(): ViewMode {
     return this.control?.getViewMode() ?? 'scroll';
+  }
+
+  /** Clear all fields */
+  clearFields(): void {
+    this.control?.clearFields();
   }
 
   /** Print the PDF */

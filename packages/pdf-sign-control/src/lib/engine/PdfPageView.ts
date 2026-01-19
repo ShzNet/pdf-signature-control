@@ -35,6 +35,7 @@ export class PdfPageView {
         this.element.style.position = 'relative';
         this.element.style.flexShrink = '0';
         this.element.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+        this.element.style.margin = '0 auto';
 
         this.canvasLayer = new CanvasLayer();
         this.element.appendChild(this.canvasLayer.getElement());
@@ -71,6 +72,12 @@ export class PdfPageView {
     setFields(fields: SignatureField[]) {
         this.signatureLayer.setFields(fields);
     }
+
+    selectField(fieldId: string | null) {
+        this.signatureLayer.select(fieldId);
+    }
+
+
 
     async render() {
         if (!this.pdfPage) return;

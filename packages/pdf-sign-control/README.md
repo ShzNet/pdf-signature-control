@@ -108,6 +108,9 @@ Updates a field's properties.
 #### `getFields(): SignatureField[]`
 Returns the current list of fields.
 
+#### `clearFields(): void`
+Remove all fields from the document.
+
 #### `setFields(fields: SignatureField[]): void`
 Replace all fields with a new set.
 
@@ -121,6 +124,7 @@ Subscribe to events:
 - `field:remove`: Fired when a field is removed - `(data: { fieldId: string }) => void`
 - `field:update`: Fired when a field is updated - `(data: { fieldId: string, updates: Partial<SignatureField> }) => void`
 - `fields:change`: Fired when any field changes - `(fields: SignatureField[]) => void`
+- `field:selection-change`: Fired when selection changes - `(data: { field: SignatureField | null }) => void`
 
 ### Printing
 

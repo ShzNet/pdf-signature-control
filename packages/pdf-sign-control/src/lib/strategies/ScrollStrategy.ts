@@ -46,7 +46,7 @@ export class ScrollStrategy implements IViewModeStrategy {
         this.container.style.display = 'flex';
         this.container.style.flexDirection = 'column';
         this.container.style.gap = '20px';
-        this.container.style.alignItems = 'center';
+        this.container.style.alignItems = '';
         this.container.style.padding = '20px';
         this.container.scrollTop = 0;
     }
@@ -168,11 +168,68 @@ export class ScrollStrategy implements IViewModeStrategy {
     }
 
     setScale(scale: number): void {
+        const oldScale = this.scale;
+
+        // 1. Find the point in the center of the viewport
+        const container = this.container;
+        const clientHeight = container.clientHeight;
+        const scrollTop = container.scrollTop;
+        const viewportCenterY = scrollTop + clientHeight / 2;
+
+        // 2. Determine which page is at the center
+        let centerPageIndex = -1;
+        let offsetOnPage = 0;
+
+        // Iterate to find the page under the center
+        // Note: This relies on the current DOM state before we change the scale
+        for (let i = 0; i < this.pageViews.length; i++) {
+            const pageView = this.pageViews[i];
+            const pageTop = pageView.element.offsetTop;
+            const pageHeight = pageView.element.offsetHeight;
+            const pageBottom = pageTop + pageHeight;
+
+            // Check if viewport center falls within this page (or the gap before it)
+            if (viewportCenterY < pageBottom) {
+                centerPageIndex = i;
+                // Calculate how far into the page the center is (0 to 1.0)
+                // If it's in the gap above, this might be negative, which is fine (relative to top of page)
+                offsetOnPage = (viewportCenterY - pageTop) / pageHeight;
+                break;
+            }
+        }
+
+        // If we're past the last page, anchor to the bottom of the last page
+        if (centerPageIndex === -1 && this.pageViews.length > 0) {
+            centerPageIndex = this.pageViews.length - 1;
+            const lastPage = this.pageViews[centerPageIndex];
+            offsetOnPage = (viewportCenterY - lastPage.element.offsetTop) / lastPage.element.offsetHeight;
+        }
+
         this.scale = scale;
 
         // Immediate: low-quality preview for responsiveness
         this.pageViews.forEach(pv => pv.updateScalePreview(scale));
         this.eventBus.emit('scale:change', { scale });
+
+        // 3. Restore scroll position based on the anchored page
+        if (centerPageIndex !== -1) {
+            const pageView = this.pageViews[centerPageIndex];
+            const newPageTop = pageView.element.offsetTop;
+            const newPageHeight = pageView.element.offsetHeight;
+
+            // Re-calculate absolute center Y
+            const newViewportCenterY = newPageTop + (offsetOnPage * newPageHeight);
+
+            // Set scroll top
+            container.scrollTop = newViewportCenterY - clientHeight / 2;
+
+            // Perform similar logic for horizontal scroll (much simpler, just ratio)
+            const clientWidth = container.clientWidth;
+            const scrollLeft = container.scrollLeft;
+            const centerX = scrollLeft + clientWidth / 2;
+            const ratio = scale / oldScale;
+            container.scrollLeft = centerX * ratio - clientWidth / 2;
+        }
 
         // Debounced: full quality render after user stops zooming
         if (this.zoomTimeout) {
@@ -196,6 +253,12 @@ export class ScrollStrategy implements IViewModeStrategy {
             pv.setFields(pageFields);
         });
     }
+
+    selectField(fieldId: string | null): void {
+        this.pageViews.forEach(pv => pv.selectField(fieldId));
+    }
+
+
 
     destroy(): void {
         this.isDestroyed = true;

@@ -14,6 +14,7 @@ export class RightPanelComponent {
     @Input() fields: any[] = [];
     @Output() remove = new EventEmitter<string>();
     @Output() update = new EventEmitter<void>();
+    @Output() clearAll = new EventEmitter<void>();
 
     constructor(public sanitizer: DomSanitizer) { }
 
@@ -23,5 +24,9 @@ export class RightPanelComponent {
 
     onUpdate() {
         this.update.emit();
+    }
+
+    onClearAll() {
+        this.clearAll.emit();
     }
 }

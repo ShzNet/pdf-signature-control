@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { PdfSignAngularComponent } from '@shznet/pdf-sign-angular';
-import { PdfSignControl, PdfSignControlOptions, ViewMode } from '@shznet/pdf-sign-control';
+import { PdfSignControl, PdfSignControlOptions, ViewMode, SignatureField } from '@shznet/pdf-sign-control';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -59,7 +59,7 @@ export class App {
     const fieldId = `field-${Date.now()}`;
     const field = {
       id: fieldId,
-      pageIndex: this.newField.page - 1,
+      pageNumber: this.newField.page,
       rect: {
         x: this.newField.x,
         y: this.newField.y,
@@ -109,6 +109,12 @@ export class App {
     this.fields = [...fields];
   }
 
+  onSelectionChange(data: { field: SignatureField | null }) {
+    console.log('[DemoApp] Selection Event:', data);
+    console.log('[DemoApp] Selected Field:', data.field);
+  }
+
+
   refreshFields() {
     // Trigger update if needed, usually references handled by component
     this.fields = [...this.fields];
@@ -116,6 +122,10 @@ export class App {
 
   removeField(id: string) {
     this.fields = this.fields.filter(f => f.id !== id);
+  }
+
+  onClearAll() {
+    this.pdfComponent?.getControl()?.clearFields();
   }
 
   // === Modal Logic ===

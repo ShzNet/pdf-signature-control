@@ -18,7 +18,10 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({ newField, onChange, onAdd,
                 <div className="form-group">
                     <label>Page</label>
                     <input type="number" value={newField.page} min={1} style={{ width: '100%' }}
-                        onChange={e => onChange('page', parseInt(e.target.value) || 1)} />
+                        onChange={e => {
+                            const val = parseInt(e.target.value, 10);
+                            onChange('page', isNaN(val) ? 1 : Math.max(1, val));
+                        }} />
                 </div>
                 <div className="form-row" style={{ display: 'flex', gap: '5px' }}>
                     <div className="form-group" style={{ flex: 1 }}>

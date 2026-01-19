@@ -23,6 +23,13 @@ export interface ScaleChangeEvent {
 }
 
 /**
+ * Event data for field selection change
+ */
+export interface SelectionChangeEvent {
+    field: SignatureField | null;
+}
+
+/**
  * Page dimensions in PDF points
  */
 export interface PageDimensions {

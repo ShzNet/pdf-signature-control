@@ -25,6 +25,7 @@ export class PdfViewer {
     private readyPromise: Promise<void> | null = null;
     private currentScale = 1.0;
     private isDestroyed = false;
+    private selectedFieldId: string | null = null;
 
     constructor(options: PdfViewerOptions) {
         this.container = options.container;
@@ -57,6 +58,20 @@ export class PdfViewer {
 
         this.eventBus.on('field:ui:resize', (data: { fieldId: string, updates: Partial<SignatureField> }) => {
             this.updateField(data.fieldId, data.updates);
+        });
+
+        this.eventBus.on('field:focus', (data: { fieldId: string }) => {
+            this.selectField(data.fieldId);
+        });
+
+        // Background click to deselect
+        this.container.addEventListener('mousedown', (e) => {
+            const target = e.target as HTMLElement;
+            // If clicked on a field, resize handle, or delete button, do not deselect
+            if (target.closest('.sc-signature-field') || target.closest('.sc-resize-handle') || target.closest('.sc-delete-btn')) {
+                return;
+            }
+            this.selectField(null);
         });
     }
 
@@ -108,6 +123,11 @@ export class PdfViewer {
 
         if (this.fields.length > 0) {
             this.strategy.setFields(this.fields);
+        }
+
+        // Restore selection
+        if (this.selectedFieldId) {
+            this.strategy.selectField(this.selectedFieldId);
         }
     }
 
@@ -227,7 +247,7 @@ export class PdfViewer {
         }
 
         // 1. Validate Page Number (1-based)
-        if (field.pageNumber < 1 || field.pageNumber > this.pdfDocument.numPages) {
+        if (typeof field.pageNumber !== 'number' || isNaN(field.pageNumber) || field.pageNumber < 1 || field.pageNumber > this.pdfDocument.numPages) {
             throw new Error(`Invalid page number: ${field.pageNumber}. Document has ${this.pdfDocument.numPages} pages.`);
         }
 
@@ -279,6 +299,9 @@ export class PdfViewer {
     }
 
     removeField(fieldId: string): void {
+        if (this.selectedFieldId === fieldId) {
+            this.selectField(null);
+        }
         this.fields = this.fields.filter(f => f.id !== fieldId);
         this.strategy?.setFields(this.fields);
         this.eventBus.emit('field:remove', { fieldId });
@@ -293,6 +316,34 @@ export class PdfViewer {
             this.eventBus.emit('field:update', { fieldId, updates });
             this.eventBus.emit('fields:change', this.fields);
         }
+    }
+
+    selectField(fieldId: string | null): void {
+        if (this.selectedFieldId === fieldId) {
+            return;
+        }
+
+        this.selectedFieldId = fieldId;
+        this.strategy?.selectField(fieldId);
+
+        let field: SignatureField | null = null;
+        if (fieldId) {
+            // Force type check or cast if needed, though interfaces match.
+            // Check if there are any trailing spaces or type mismatches (string vs number ID?)
+            field = this.fields.find(f => String(f.id) === String(fieldId)) || null;
+            if (!field) {
+                console.warn(`[PdfSignControl] Selection warning: Field with ID "${fieldId}" not found in local state. Available IDs:`, this.fields.map(f => f.id));
+            }
+        }
+
+        this.eventBus.emit('field:selection-change', { field });
+    }
+
+    clearFields(): void {
+        this.selectField(null);
+        this.fields = [];
+        this.strategy?.setFields(this.fields);
+        this.eventBus.emit('fields:change', this.fields);
     }
 
     private handleFieldDrop(fieldId: string, clientX: number, clientY: number, elementX: number, elementY: number) {
