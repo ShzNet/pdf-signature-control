@@ -73,6 +73,16 @@
     }
   },
   "targetDefaults": {
+    "@nx/vite:build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "cache": true,
+      "inputs": [
+        "production",
+        "^production"
+      ]
+    },
     "test": {
       "dependsOn": [
         "^build"

@@ -1,5 +1,9 @@
 {
   "name": "@shznet/demo-react",
   "version": "0.0.1",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@shznet/pdf-sign-control": "*",
+    "@shznet/pdf-sign-react": "*"
+  }
 }
