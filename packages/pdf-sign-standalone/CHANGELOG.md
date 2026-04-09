@@ -1,3 +1,13 @@
+## 1.1.0 (2026-04-09)
+
+### 🚀 Features
+
+- enhance project configurations and dependencies for demo apps ([807ce73](https://github.com/ShzNet/pdf-signature-control/commit/807ce73))
+
+### ❤️ Thank You
+
+- Chien Tran
+
 ## 1.0.1 (2026-01-19)
 
 This was a version bump only for @shznet/pdf-sign-standalone to align it with other projects, there were no code changes.
