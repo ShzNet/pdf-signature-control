@@ -2,6 +2,7 @@ import { PDFPageProxy } from 'pdfjs-dist';
 import { CanvasLayer } from '../layers/CanvasLayer.js';
 import { SignatureLayer } from '../layers/SignatureLayer.js';
 import { EventBus } from '../utils/EventBus.js';
+import { pdfSignLazyDebug } from '../utils/lazyDebug.js';
 import { SignatureField } from '../types.js';
 
 export interface PdfPageViewOptions {
@@ -17,6 +18,8 @@ export class PdfPageView {
     private canvasLayer: CanvasLayer;
     private signatureLayer: SignatureLayer;
     private pdfPage: PDFPageProxy | null = null;
+    /** Unscaled PDF size (points) from metadata — keeps layout when the page is not loaded. */
+    private metadataDimensions: { width: number; height: number } | null = null;
     public readonly pageIndex: number; // 0-based
     private scale: number;
     private eventBus: EventBus;
@@ -46,6 +49,10 @@ export class PdfPageView {
         // SET SIGNATURE LAYER DIMENSIONS IMMEDIATELY if provided
         // This ensures fields can be added right away, before canvas renders
         if (options.pageDimensions) {
+            this.metadataDimensions = {
+                width: options.pageDimensions.width,
+                height: options.pageDimensions.height
+            };
             this.signatureLayer.setPageDimensions(
                 options.pageDimensions.width,
                 options.pageDimensions.height,
@@ -54,16 +61,71 @@ export class PdfPageView {
         }
 
         this.container.appendChild(this.element);
+        this.applyShellFromMetadata();
+    }
+
+    /** True when PDF.js page is attached and canvas may render bitmaps. */
+    isPdfPageAttached(): boolean {
+        return this.pdfPage !== null;
+    }
+
+    private applyShellFromMetadata(): void {
+        if (!this.metadataDimensions) return;
+        const w = this.metadataDimensions.width * this.scale;
+        const h = this.metadataDimensions.height * this.scale;
+        this.element.style.width = `${w}px`;
+        this.element.style.height = `${h}px`;
+        this.signatureLayer.setPageDimensions(
+            this.metadataDimensions.width,
+            this.metadataDimensions.height,
+            this.scale
+        );
+        this.element.style.backgroundColor = this.pdfPage ? '' : '#ececec';
+    }
+
+    /**
+     * Release PDF page + canvas to save memory; keeps shell size and signature fields.
+     */
+    unloadPdfPage(): void {
+        if (!this.pdfPage) return;
+        const canvas = this.canvasLayer.getElement();
+        pdfSignLazyDebug('release:page-view', {
+            page: this.pageIndex + 1,
+            canvasBitmapPx:
+                canvas.width > 0 && canvas.height > 0
+                    ? { width: canvas.width, height: canvas.height }
+                    : null
+        });
+        const page = this.pdfPage;
+        this.pdfPage = null;
+        this.canvasLayer.releasePage();
+        try {
+            (page as { cleanup?: () => void }).cleanup?.();
+        } catch {
+            // ignore cleanup errors
+        }
+        this.applyShellFromMetadata();
     }
 
     setPdfPage(pdfPage: PDFPageProxy) {
         this.pdfPage = pdfPage;
         this.canvasLayer.setPage(pdfPage);
+        this.element.style.backgroundColor = '';
 
         // IMMEDIATELY set SignatureLayer dimensions so fields can be added right away
         // This is synchronous and doesn't wait for canvas to render
         const unscaledViewport = pdfPage.getViewport({ scale: 1.0 });
+        this.metadataDimensions = {
+            width: unscaledViewport.width,
+            height: unscaledViewport.height
+        };
         this.signatureLayer.setPageDimensions(unscaledViewport.width, unscaledViewport.height, this.scale);
+
+        pdfSignLazyDebug('attach:page-view', {
+            page: this.pageIndex + 1,
+            pdfSizePt: { width: unscaledViewport.width, height: unscaledViewport.height },
+            scale: this.scale
+        });
 
         // Trigger async canvas render (SignatureLayer is already ready)
         this.render();
@@ -127,6 +189,10 @@ export class PdfPageView {
 
     updateScale(scale: number) {
         this.scale = scale;
+        if (!this.pdfPage) {
+            this.applyShellFromMetadata();
+            return;
+        }
         this.render();
     }
 
@@ -135,6 +201,10 @@ export class PdfPageView {
      */
     updateScalePreview(scale: number) {
         this.scale = scale;
+        if (!this.pdfPage) {
+            this.applyShellFromMetadata();
+            return;
+        }
         this.renderPreview();
     }
 
@@ -143,6 +213,10 @@ export class PdfPageView {
      */
     updateScaleFull(scale: number) {
         this.scale = scale;
+        if (!this.pdfPage) {
+            this.applyShellFromMetadata();
+            return;
+        }
         this.renderFull();
     }
 

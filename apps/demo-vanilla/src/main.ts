@@ -1,4 +1,5 @@
 import { PdfSignControl, ViewMode } from '@shznet/pdf-sign-control';
+import * as pdfjs from 'pdfjs-dist';
 import './styles.css';
 import { LeftPanel, NewFieldData } from './components/LeftPanel';
 import { RightPanel } from './components/RightPanel';
@@ -74,8 +75,8 @@ if (app) {
   const control = new PdfSignControl({
     container: pdfContainer,
     pdfLoaderOptions: {
-      workerSrc: `https://unpkg.com/pdfjs-dist@5.4.530/build/pdf.worker.min.mjs`,
-      cMapUrl: `https://unpkg.com/pdfjs-dist@5.4.530/cmaps/`,
+      workerSrc: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`,
+      cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
       cMapPacked: true,
     }
   });

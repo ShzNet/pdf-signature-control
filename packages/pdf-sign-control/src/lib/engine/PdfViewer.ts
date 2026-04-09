@@ -6,6 +6,15 @@ import { IViewModeStrategy } from '../strategies/IViewModeStrategy.js';
 import { SinglePageStrategy } from '../strategies/SinglePageStrategy.js';
 import { ScrollStrategy } from '../strategies/ScrollStrategy.js';
 
+/** Release PDF.js page parse cache when we only needed size (viewport) — lowers baseline RAM for large docs. */
+function tryCleanupPdfPage(page: unknown): void {
+    try {
+        (page as { cleanup?: () => void }).cleanup?.();
+    } catch {
+        /* ignore */
+    }
+}
+
 export interface PdfViewerOptions {
     container: HTMLElement;
     pdfLoaderOptions?: PdfLoaderOptions;
@@ -93,6 +102,7 @@ export class PdfViewer {
                 const page = await this.pdfDocument.getPage(i);
                 const viewport = page.getViewport({ scale: 1.0 });
                 this.pageInfo.set(i - 1, { width: viewport.width, height: viewport.height });
+                tryCleanupPdfPage(page);
             }
 
             await this.initStrategy();
@@ -212,6 +222,7 @@ export class PdfViewer {
                 height: viewport.height
             };
             this.pageInfo.set(pageIndex, dimensions);
+            tryCleanupPdfPage(page);
             return dimensions;
         } catch (error) {
             console.error(`Failed to get dimensions for page ${pageIndex}:`, error);
@@ -265,6 +276,7 @@ export class PdfViewer {
                 const vp = page.getViewport({ scale: 1.0 });
                 this.pageInfo.set(field.pageNumber - 1, { width: vp.width, height: vp.height });
                 dims = { width: vp.width, height: vp.height };
+                tryCleanupPdfPage(page);
             }
 
             // Check if field is within page boundaries (allowing small floating point margin)
@@ -532,6 +544,7 @@ export class PdfViewer {
             for (let i = 1; i <= numPages; i++) {
                 const page = await this.pdfDocument.getPage(i);
                 const viewport = page.getViewport({ scale: printScale });
+                const vpRaw = page.getViewport({ scale: 1.0 });
 
                 // Render to Canvas
                 const canvas = document.createElement('canvas');
@@ -562,7 +575,6 @@ export class PdfViewer {
                         const fieldEl = document.createElement('div');
                         fieldEl.className = 'print-field select-none';
 
-                        const vpRaw = page.getViewport({ scale: 1.0 });
                         const leftPct = (field.rect.x / vpRaw.width) * 100;
                         const topCss = vpRaw.height - field.rect.y - field.rect.height;
                         const topPct = (topCss / vpRaw.height) * 100;
@@ -616,6 +628,7 @@ export class PdfViewer {
                 }
 
                 container.appendChild(pageWrapper);
+                tryCleanupPdfPage(page);
             }
 
             // 5. Print

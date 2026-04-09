@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { PdfSignAngularComponent } from '@shznet/pdf-sign-angular';
 import { PdfSignControl, PdfSignControlOptions, ViewMode, SignatureField } from '@shznet/pdf-sign-control';
+import * as pdfjs from 'pdfjs-dist';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -29,8 +30,8 @@ export class App {
   currentDate = new Date().toLocaleDateString();
 
   pdfLoaderOptions: PdfSignControlOptions['pdfLoaderOptions'] = {
-    workerSrc: 'https://unpkg.com/pdfjs-dist@5.4.530/build/pdf.worker.min.mjs',
-    cMapUrl: 'https://unpkg.com/pdfjs-dist@5.4.530/cmaps/',
+    workerSrc: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`,
+    cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
     cMapPacked: true
   };
 

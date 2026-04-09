@@ -1,5 +1,7 @@
-
 import { PDFPageProxy, RenderTask } from 'pdfjs-dist';
+
+/** Cap HiDPI multiplier so full-quality canvas bitmaps stay bounded (memory scales with DPR²). */
+const MAX_CANVAS_PIXEL_RATIO = 2;
 
 export class CanvasLayer {
     private canvas: HTMLCanvasElement;
@@ -73,8 +75,10 @@ export class CanvasLayer {
             const renderScale = isPreview ? scale * 0.5 : scale;
             const viewport = this.pdfPage!.getViewport({ scale: renderScale });
 
-            // Support high DPI displays (skip for preview to be faster)
-            const outputScale = isPreview ? 1 : (window.devicePixelRatio || 1);
+            // Support high DPI displays (skip for preview to be faster); cap to limit GPU/RAM use
+            const outputScale = isPreview
+                ? 1
+                : Math.min(window.devicePixelRatio || 1, MAX_CANVAS_PIXEL_RATIO);
 
             // Set canvas dimensions
             this.canvas.width = Math.floor(viewport.width * outputScale);
@@ -118,6 +122,22 @@ export class CanvasLayer {
         })();
 
         return this.activeRenderPromise;
+    }
+
+    /**
+     * Drop the PDF page reference and clear the canvas (memory-friendly lazy unload).
+     */
+    releasePage(): void {
+        this.cancelRender();
+        this.pdfPage = null;
+        if (this.ctx && this.canvas.width > 0 && this.canvas.height > 0) {
+            this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+        this.canvas.width = 0;
+        this.canvas.height = 0;
+        this.canvas.style.width = '0';
+        this.canvas.style.height = '0';
     }
 
     destroy() {

@@ -1,6 +1,7 @@
 import { PdfSignReact, PdfSignReactRef } from '@shznet/pdf-sign-react';
 import { useRef, useState, useMemo, useCallback } from 'react';
 import { SignatureField } from '@shznet/pdf-sign-control';
+import * as pdfjs from 'pdfjs-dist';
 import '../styles.css';
 import { NewFieldState } from './types';
 import { LeftPanel } from './components/LeftPanel';
@@ -33,8 +34,8 @@ export function App() {
 
   // Optimize Props to prevent re-renders
   const pdfLoaderOptions = useMemo(() => ({
-    workerSrc: 'https://unpkg.com/pdfjs-dist@5.4.530/build/pdf.worker.min.mjs',
-    cMapUrl: 'https://unpkg.com/pdfjs-dist@5.4.530/cmaps/',
+    workerSrc: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`,
+    cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
     cMapPacked: true,
   }), []);
 
@@ -190,7 +191,7 @@ export function App() {
         <div id="pdf-container">
           <PdfSignReact
             ref={pdfRef}
-            src="https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf"
+            src="/Doc1-merged_signed.pdf"
             viewMode="scroll"
             page={currentPage}
             scale={scale}

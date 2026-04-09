@@ -3,6 +3,14 @@ import { EventBus } from '../utils/EventBus.js';
 import { PdfPageView } from '../engine/PdfPageView.js';
 import { IViewModeStrategy } from './IViewModeStrategy.js';
 import { SignatureField } from '../types.js';
+import { pdfSignLazyDebug } from '../utils/lazyDebug.js';
+
+/** Vertical margin around the scroll viewport for prefetch / delayed unload (CSS px). */
+const LAZY_ROOT_MARGIN_PX = 480;
+/** After leaving the expanded viewport, unload bitmaps after this delay to avoid thrash. */
+const UNLOAD_DEBOUNCE_MS = 400;
+/** Hard cap on PDF.js pages kept attached at once (prefetch can otherwise load many on tall screens). */
+const MAX_ATTACHED_PDF_PAGES = 6;
 
 /**
  * Scroll viewing strategy - displays all pages in a scrollable container.
@@ -18,7 +26,12 @@ export class ScrollStrategy implements IViewModeStrategy {
 
     private pageViews: PdfPageView[] = [];
     private fields: SignatureField[] = [];
-    private observer: IntersectionObserver | null = null;
+    /** Which page is most visible (toolbar / indicators). */
+    private pageIndicatorObserver: IntersectionObserver | null = null;
+    /** Near-viewport pages get PDF bytes; far pages unload to save memory. */
+    private lazyVisibilityObserver: IntersectionObserver | null = null;
+    private pageLoadPromises = new Map<number, Promise<void>>();
+    private unloadTimers = new Map<number, ReturnType<typeof setTimeout>>();
     private zoomTimeout: ReturnType<typeof setTimeout> | null = null;
     private isDestroyed = false;
     private pageInfo: Map<number, { width: number, height: number }> = new Map();
@@ -35,7 +48,14 @@ export class ScrollStrategy implements IViewModeStrategy {
         this.initContainer();
         await this.renderAllPages();
         if (!this.isDestroyed) {
-            this.setupIntersectionObserver();
+            this.setupPageIndicatorObserver();
+            this.setupLazyVisibilityObserver();
+            pdfSignLazyDebug('scroll:init', {
+                totalPages: this.totalPages,
+                rootMarginPx: LAZY_ROOT_MARGIN_PX,
+                unloadDebounceMs: UNLOAD_DEBOUNCE_MS,
+                maxAttachedPages: MAX_ATTACHED_PDF_PAGES
+            });
         }
     }
 
@@ -72,20 +92,8 @@ export class ScrollStrategy implements IViewModeStrategy {
             this.pageViews.push(pageView);
         }
 
-        // 2. Load pages in parallel (progressive/background rendering)
-        // We do NOT await this. This allows the viewer to be "ready" for interaction (adding fields)
-        // immediately after structure is created. Content will appear as it loads.
-        this.pageViews.forEach(async (pageView, index) => {
-            if (this.isDestroyed) return;
-            try {
-                const pdfPage = await this.pdfDocument.getPage(index + 1);
-                if (!this.isDestroyed) {
-                    pageView.setPdfPage(pdfPage);
-                }
-            } catch (error) {
-                console.error(`Error loading page ${index + 1}:`, error);
-            }
-        });
+        // 2. PDF page loading is deferred — IntersectionObserver + goToPage load only
+        //    near-viewport pages. Shell size comes from pageInfo so scroll / goToPage work immediately.
 
         // 3. Emit initial event immediately (structure is ready)
         if (this.isDestroyed) return;
@@ -96,9 +104,9 @@ export class ScrollStrategy implements IViewModeStrategy {
         });
     }
 
-    private setupIntersectionObserver(): void {
-        if (this.observer) {
-            this.observer.disconnect();
+    private setupPageIndicatorObserver(): void {
+        if (this.pageIndicatorObserver) {
+            this.pageIndicatorObserver.disconnect();
         }
 
         const options: IntersectionObserverInit = {
@@ -106,7 +114,7 @@ export class ScrollStrategy implements IViewModeStrategy {
             threshold: 0.5
         };
 
-        this.observer = new IntersectionObserver((entries) => {
+        this.pageIndicatorObserver = new IntersectionObserver((entries) => {
             let maxRatio = 0;
             let visiblePageIndex = this.currentPage - 1;
 
@@ -131,8 +139,200 @@ export class ScrollStrategy implements IViewModeStrategy {
         }, options);
 
         this.pageViews.forEach(pv => {
-            this.observer?.observe(pv.element);
+            this.pageIndicatorObserver?.observe(pv.element);
         });
+    }
+
+    private setupLazyVisibilityObserver(): void {
+        if (this.lazyVisibilityObserver) {
+            this.lazyVisibilityObserver.disconnect();
+        }
+
+        const margin = `${LAZY_ROOT_MARGIN_PX}px 0px`;
+        this.lazyVisibilityObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const pageView = this.pageViews.find(pv => pv.element === entry.target);
+                if (!pageView) return;
+                const idx = pageView.pageIndex;
+
+                if (entry.isIntersecting) {
+                    pdfSignLazyDebug('io:near-viewport', {
+                        page: idx + 1,
+                        intersectionRatio: Math.round(entry.intersectionRatio * 1000) / 1000
+                    });
+                    this.cancelScheduledUnload(idx);
+                    this.schedulePageLoad(idx);
+                } else {
+                    pdfSignLazyDebug('io:outside-band', { page: idx + 1 });
+                    this.scheduleUnloadIfFar(idx);
+                }
+            });
+        }, {
+            root: this.container,
+            rootMargin: margin,
+            threshold: 0
+        });
+
+        this.pageViews.forEach(pv => {
+            this.lazyVisibilityObserver?.observe(pv.element);
+        });
+    }
+
+    private cancelScheduledUnload(pageIndex: number): void {
+        const t = this.unloadTimers.get(pageIndex);
+        if (t !== undefined) {
+            clearTimeout(t);
+            this.unloadTimers.delete(pageIndex);
+            pdfSignLazyDebug('unload:timer-cancelled', { page: pageIndex + 1 });
+        }
+    }
+
+    private scheduleUnloadIfFar(pageIndex: number): void {
+        this.cancelScheduledUnload(pageIndex);
+        pdfSignLazyDebug('unload:scheduled', {
+            page: pageIndex + 1,
+            delayMs: UNLOAD_DEBOUNCE_MS
+        });
+        const timer = setTimeout(() => {
+            this.unloadTimers.delete(pageIndex);
+            if (this.isDestroyed) return;
+            if (this.isPageNearViewport(pageIndex)) {
+                pdfSignLazyDebug('unload:aborted-still-near', { page: pageIndex + 1 });
+                return;
+            }
+            const pv = this.pageViews[pageIndex];
+            if (pv?.isPdfPageAttached()) {
+                pdfSignLazyDebug('unload:releasing', {
+                    page: pageIndex + 1,
+                    reason: 'outside-expanded-viewport-after-debounce'
+                });
+                pv.unloadPdfPage();
+            }
+        }, UNLOAD_DEBOUNCE_MS);
+        this.unloadTimers.set(pageIndex, timer);
+    }
+
+    private isPageNearViewport(pageIndex: number): boolean {
+        const pv = this.pageViews[pageIndex];
+        if (!pv) return false;
+        const rootRect = this.container.getBoundingClientRect();
+        const elRect = pv.element.getBoundingClientRect();
+        const m = LAZY_ROOT_MARGIN_PX;
+        const top = rootRect.top - m;
+        const bottom = rootRect.bottom + m;
+        return elRect.bottom >= top && elRect.top <= bottom;
+    }
+
+    /**
+     * If prefetch loaded more than MAX_ATTACHED_PDF_PAGES, unload the farthest pages from the
+     * scroll center (never the page we just attached; prefer pages outside the strict viewport).
+     */
+    private enforceAttachedPageLimit(protectPageIndex: number): void {
+        const max = MAX_ATTACHED_PDF_PAGES;
+        while (true) {
+            const attachedIndices = this.pageViews
+                .map((pv, idx) => ({ idx, pv }))
+                .filter(({ pv }) => pv.isPdfPageAttached())
+                .map(x => x.idx);
+            if (attachedIndices.length <= max) break;
+
+            const st = this.container.scrollTop;
+            const ch = this.container.clientHeight;
+            const centerY = st + ch / 2;
+
+            let victim: number | null = null;
+            let victimDist = -1;
+
+            const score = (idx: number, allowInViewport: boolean) => {
+                if (idx === protectPageIndex) return;
+                const pv = this.pageViews[idx];
+                const top = pv.element.offsetTop;
+                const h = pv.element.offsetHeight;
+                const inStrict = top + h > st && top < st + ch;
+                if (!allowInViewport && inStrict) return;
+                const dist = Math.abs(top + h / 2 - centerY);
+                if (dist > victimDist) {
+                    victimDist = dist;
+                    victim = idx;
+                }
+            };
+
+            for (const idx of attachedIndices) {
+                score(idx, false);
+            }
+            if (victim === null) {
+                for (const idx of attachedIndices) {
+                    score(idx, true);
+                }
+            }
+            if (victim === null) break;
+            pdfSignLazyDebug('memory:evict-farthest', {
+                page: victim + 1,
+                attachedCount: attachedIndices.length,
+                maxAttachedPages: max,
+                protectPage: protectPageIndex + 1
+            });
+            this.pageViews[victim].unloadPdfPage();
+        }
+    }
+
+    private schedulePageLoad(pageIndex: number): void {
+        if (this.isDestroyed || pageIndex < 0 || pageIndex >= this.pageViews.length) {
+            pdfSignLazyDebug('load:skip', {
+                page: pageIndex >= 0 ? pageIndex + 1 : pageIndex,
+                reason: this.isDestroyed ? 'destroyed' : 'invalid-index'
+            });
+            return;
+        }
+        const pv = this.pageViews[pageIndex];
+        if (!pv || pv.isPdfPageAttached()) {
+            pdfSignLazyDebug('load:skip', {
+                page: pageIndex + 1,
+                reason: !pv ? 'no-page-view' : 'already-attached'
+            });
+            return;
+        }
+        if (this.pageLoadPromises.has(pageIndex)) {
+            pdfSignLazyDebug('load:skip', { page: pageIndex + 1, reason: 'already-in-flight' });
+            return;
+        }
+
+        pdfSignLazyDebug('load:fetch-start', { page: pageIndex + 1 });
+        const promise = (async () => {
+            try {
+                const pdfPage = await this.pdfDocument.getPage(pageIndex + 1);
+                if (this.isDestroyed) {
+                    pdfSignLazyDebug('load:aborted', { page: pageIndex + 1, reason: 'destroyed-after-getPage' });
+                    return;
+                }
+                if (!this.isPageNearViewport(pageIndex)) {
+                    pdfSignLazyDebug('load:discard-proxy', {
+                        page: pageIndex + 1,
+                        reason: 'no-longer-near-viewport'
+                    });
+                    try {
+                        (pdfPage as { cleanup?: () => void }).cleanup?.();
+                    } catch {
+                        /* ignore */
+                    }
+                    return;
+                }
+                if (!pv.isPdfPageAttached()) {
+                    pv.setPdfPage(pdfPage);
+                    this.enforceAttachedPageLimit(pageIndex);
+                    pdfSignLazyDebug('load:done', {
+                        page: pageIndex + 1,
+                        attachedNow: this.pageViews.filter(p => p.isPdfPageAttached()).length
+                    });
+                }
+            } catch (error) {
+                console.error(`Error loading page ${pageIndex + 1}:`, error);
+            } finally {
+                this.pageLoadPromises.delete(pageIndex);
+            }
+        })();
+
+        this.pageLoadPromises.set(pageIndex, promise);
     }
 
     goToPage(pageNumber: number): void {
@@ -140,6 +340,9 @@ export class ScrollStrategy implements IViewModeStrategy {
 
         const pageView = this.pageViews[pageNumber - 1];
         if (pageView) {
+            pdfSignLazyDebug('goto:request-load', { page: pageNumber });
+            this.schedulePageLoad(pageNumber - 1);
+
             const containerTop = this.container.getBoundingClientRect().top;
             const pageTop = pageView.element.getBoundingClientRect().top;
             const scrollOffset = pageTop - containerTop + this.container.scrollTop;
@@ -266,9 +469,16 @@ export class ScrollStrategy implements IViewModeStrategy {
             clearTimeout(this.zoomTimeout);
             this.zoomTimeout = null;
         }
-        if (this.observer) {
-            this.observer.disconnect();
-            this.observer = null;
+        this.unloadTimers.forEach(t => clearTimeout(t));
+        this.unloadTimers.clear();
+        this.pageLoadPromises.clear();
+        if (this.pageIndicatorObserver) {
+            this.pageIndicatorObserver.disconnect();
+            this.pageIndicatorObserver = null;
+        }
+        if (this.lazyVisibilityObserver) {
+            this.lazyVisibilityObserver.disconnect();
+            this.lazyVisibilityObserver = null;
         }
         this.pageViews.forEach(pv => pv.destroy());
         this.pageViews = [];
