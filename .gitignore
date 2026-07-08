@@ -1,50 +1,61 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
-# compiled output
-dist
-tmp
-out-tsc
-
-# dependencies
-node_modules
-
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# IDE - VSCode
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.cursor/
+*.sublime-workspace
+*.swp
+*.swo
 
-# misc
-/.sass-cache
-/connect.lock
-/coverage
-/libpeerconnection.log
-npm-debug.log
-yarn-error.log
-testem.log
-/typings
+# Logs / temp
+tmp/
+temp/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# System Files
-.DS_Store
-Thumbs.db
-
-.nx/cache
-.nx/workspace-data
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
-
+# Frontend / Node
+node_modules/
+dist/
+coverage/
+test-output/
+out-tsc/
+.angular/
+.nx/
+.turbo/
+.cache/
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
-.angular
 
-test-output
+# Frontend sub-workspace
+FE-control/node_modules/
+FE-control/dist/
+FE-control/.angular/
+FE-control/.nx/
+FE-control/coverage/
+FE-control/test-output/
+FE-control/apps/*/dist/
+FE-control/packages/*/dist/
+
+# Backend / .NET
+bin/
+obj/
+BE-control/data/
+BE-control/src/*/data/
+
+# Tooling artifacts
+.sass-cache/
+connect.lock
+libpeerconnection.log
+typings/
+
+# Keep repo-owned config/docs tracked
+!.github/
+!.vscode/extensions.json

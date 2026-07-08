@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+option csharp_namespace = "SignatureControl.Renderer.Grpc.Protos";
+
+package signatureappearance;
+
+service SignatureAppearanceGrpc {
+  rpc RenderPreview (RenderPreviewRequest) returns (RenderPreviewReply);
+  rpc RenderPreviewBatch (RenderPreviewBatchRequest) returns (RenderPreviewBatchReply);
+  rpc GetAppearancePng (GetAppearancePngRequest) returns (GetAppearancePngReply);
+}
+
+message SignatureContentMessage {
+  string signer_name = 1;
+  string role_name = 2;
+  string organization = 3;
+  string signed_at_text = 4;
+  string signature_image_id = 5;
+  string email = 6;
+  string phone_number = 7;
+  string organization_unit_name = 8;
+  string department_name = 9;
+  SignatureAppearanceOptionsMessage appearance_options = 10;
+}
+
+message SignatureTypedValueMessage {
+  string name = 1;
+}
+
+message SignatureAppearanceOptionsMessage {
+  int32 image_type = 1;
+  int32 layout_direction = 2;
+  int32 image_size = 3;
+  float text_size = 4;
+  float certificate_name_font_size = 5;
+  int32 language_code = 6;
+  bool show_certificate_name = 7;
+  bool show_time_stamp = 8;
+  bool show_label = 9;
+  bool show_role_name = 10;
+  bool show_email = 11;
+  bool show_phone_number = 12;
+  bool show_organization_unit_name = 13;
+  bool show_department_name = 14;
+  string pen_color = 15;
+  float pen_width = 16;
+  SignatureTypedValueMessage typed = 17;
+  int32 image_background_mode = 18;
+  string visual_goal = 19;
+}
+
+message SignatureBoxMessage {
+  float width = 1;
+  float height = 2;
+  string unit = 3;
+}
+
+message SignatureRenderOptionsMessage {
+  string format = 1;
+  float scale = 2;
+}
+
+message RenderPreviewRequest {
+  string template_id = 1;
+  SignatureBoxMessage box = 2;
+  SignatureContentMessage content = 3;
+  SignatureRenderOptionsMessage render = 4;
+}
+
+message RenderPreviewReply {
+  string appearance_id = 1;
+  string cache_key = 2;
+  float width_pt = 3;
+  float height_pt = 4;
+  int32 width_px = 5;
+  int32 height_px = 6;
+}
+
+message RenderPreviewBatchRequest {
+  repeated RenderPreviewRequest items = 1;
+}
+
+message RenderPreviewBatchReply {
+  repeated RenderPreviewReply items = 1;
+}
+
+message GetAppearancePngRequest {
+  string appearance_id = 1;
+}
+
+message GetAppearancePngReply {
+  bytes png_bytes = 1;
+}

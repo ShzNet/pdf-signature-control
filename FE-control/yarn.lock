@@ -3447,40 +3447,45 @@
     "@angular-devkit/schematics" "21.0.4"
     jsonc-parser "3.3.1"
 
-"@shznet/demo-angular@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/apps/demo-angular":
+"@shznet/demo-angular@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/FE-control/apps/demo-angular":
   version "0.0.1"
   resolved "file:apps/demo-angular"
   dependencies:
     "@shznet/pdf-sign-angular" "*"
     "@shznet/pdf-sign-control" "*"
 
-"@shznet/demo-react@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/apps/demo-react":
+"@shznet/demo-react@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/FE-control/apps/demo-react":
   version "0.0.1"
   resolved "file:apps/demo-react"
+  dependencies:
+    "@shznet/pdf-sign-control" "*"
+    "@shznet/pdf-sign-react" "*"
 
-"@shznet/demo-vanilla@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/apps/demo-vanilla":
+"@shznet/demo-vanilla@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/FE-control/apps/demo-vanilla":
   version "0.0.1"
   resolved "file:apps/demo-vanilla"
+  dependencies:
+    "@shznet/pdf-sign-control" "*"
 
-"@shznet/pdf-sign-angular@*", "@shznet/pdf-sign-angular@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/packages/pdf-sign-angular":
+"@shznet/pdf-sign-angular@*", "@shznet/pdf-sign-angular@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/FE-control/packages/pdf-sign-angular":
   version "1.0.1"
   resolved "file:packages/pdf-sign-angular"
   dependencies:
     "@shznet/pdf-sign-control" "*"
 
-"@shznet/pdf-sign-control@*", "@shznet/pdf-sign-control@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/packages/pdf-sign-control":
+"@shznet/pdf-sign-control@*", "@shznet/pdf-sign-control@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/FE-control/packages/pdf-sign-control":
   version "1.0.1"
   resolved "file:packages/pdf-sign-control"
   dependencies:
-    pdfjs-dist "^5.4.530"
+    pdfjs-dist "5.4.530"
 
-"@shznet/pdf-sign-react@*", "@shznet/pdf-sign-react@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/packages/pdf-sign-react":
+"@shznet/pdf-sign-react@*", "@shznet/pdf-sign-react@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/FE-control/packages/pdf-sign-react":
   version "1.0.1"
   resolved "file:packages/pdf-sign-react"
   dependencies:
     "@shznet/pdf-sign-control" "*"
 
-"@shznet/pdf-sign-standalone@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/packages/pdf-sign-standalone":
+"@shznet/pdf-sign-standalone@file:/Users/shizaki/Works/Shizaki/pdf-signature-control/FE-control/packages/pdf-sign-standalone":
   version "1.0.1"
   resolved "file:packages/pdf-sign-standalone"
   dependencies:
