@@ -1,3 +1,7 @@
+## 1.1.1 (2026-11-17)
+
+This was a version bump only for @shznet/pdf-sign-standalone to align it with other projects, there were no code changes.
+
 ## 1.1.0 (2026-04-09)
 
 ### 🚀 Features
