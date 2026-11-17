@@ -1,3 +1,9 @@
+## Unreleased
+
+### Fixes
+
+- Forward PDF.js loader options and support `wasmUrl` so JPEG 2000 images can be decoded. Configure version-matched WASM assets in the demos and document self-hosting requirements.
+
 ## 1.1.0 (2026-04-09)
 
 ### 🚀 Features

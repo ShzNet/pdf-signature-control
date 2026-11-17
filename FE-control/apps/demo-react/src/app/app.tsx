@@ -147,6 +147,7 @@ export function App() {
     workerSrc: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`,
     cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
     cMapPacked: true,
+    wasmUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/wasm/`,
   }), []);
 
   const sharedProfile = useMemo(() => buildProfileFromNewField(newField), [newField]);

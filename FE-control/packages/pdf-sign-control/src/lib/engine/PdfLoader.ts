@@ -6,10 +6,13 @@ export type PDFDocumentProxy = pdfjsLib.PDFDocumentProxy;
 
 export class PdfLoader {
     private document: PDFDocumentProxy | null = null;
+    private readonly documentOptions: Omit<PdfLoaderOptions, 'workerSrc'>;
 
     constructor(options: PdfLoaderOptions = {}) {
-        if (options.workerSrc) {
-            GlobalWorkerOptions.workerSrc = options.workerSrc;
+        const { workerSrc, ...documentOptions } = options;
+        this.documentOptions = documentOptions;
+        if (workerSrc) {
+            GlobalWorkerOptions.workerSrc = workerSrc;
         } else {
             GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
         }
@@ -17,7 +20,10 @@ export class PdfLoader {
 
     async loadDocument(source: string | Uint8Array | ArrayBuffer): Promise<PDFDocumentProxy> {
         try {
-            const loadingTask = pdfjsLib.getDocument(source);
+            const loadingTask = pdfjsLib.getDocument({
+                ...this.documentOptions,
+                ...(typeof source === 'string' ? { url: source } : { data: source }),
+            });
             this.document = await loadingTask.promise;
             return this.document;
         } catch (error) {

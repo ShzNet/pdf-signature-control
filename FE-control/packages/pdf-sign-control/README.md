@@ -40,6 +40,45 @@ pdfControl.on('fields:change', (fields) => {
 });
 ```
 
+### JPEG 2000 images and self-hosted PDF.js assets
+
+PDFs containing JPEG 2000 (`JPXDecode`) images require the OpenJPEG decoder.
+Without `wasmUrl`, PDF.js may display text but skip these images with
+`JpxError: OpenJPEG failed to initialize`.
+
+Copy the worker, `cmaps/`, and the entire `wasm/` directory (including its license
+files) from **pdfjs-dist 5.4.530**, matching this package's PDF.js version, into
+your application's public assets:
+
+```text
+public/pdfjs/
+  pdf.worker.min.mjs       # from pdfjs-dist/build/
+  cmaps/
+  wasm/
+    openjpeg.wasm
+    openjpeg_nowasm_fallback.js
+    qcms_bg.wasm
+    LICENSE_*
+```
+
+Pass these locations through `pdfLoaderOptions` (also supported by the React and
+Angular wrappers):
+
+```typescript
+pdfLoaderOptions: {
+  workerSrc: '/pdfjs/pdf.worker.min.mjs',
+  cMapUrl: '/pdfjs/cmaps/',
+  cMapPacked: true,
+  wasmUrl: '/pdfjs/wasm/',
+}
+```
+
+Directory URLs must end with `/`. Adjust the paths for applications hosted under
+a subpath. Ensure the server returns the actual files, not an HTML fallback, and
+permits loading WASM under its Content Security Policy. The demos use
+version-matched CDN assets; self-host these assets for production or offline use.
+Setting `useWasm: false` is not a substitute for providing the decoder assets.
+
 ## API
 
 ### Document Loading

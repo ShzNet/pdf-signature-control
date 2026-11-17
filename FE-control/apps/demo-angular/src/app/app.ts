@@ -32,6 +32,7 @@ export class App {
   pdfLoaderOptions: PdfSignControlOptions['pdfLoaderOptions'] = {
     workerSrc: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`,
     cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+    wasmUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/wasm/`,
     cMapPacked: true
   };
 

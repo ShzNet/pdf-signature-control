@@ -44,6 +44,8 @@ export interface PdfLoaderOptions {
     workerSrc?: string;
     cMapUrl?: string;
     cMapPacked?: boolean;
+    /** PDF.js decoder assets directory (with trailing slash), required for JPEG 2000 images. */
+    wasmUrl?: string;
 }
 
 /**
